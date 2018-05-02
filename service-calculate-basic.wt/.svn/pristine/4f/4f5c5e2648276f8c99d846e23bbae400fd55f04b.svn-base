@@ -1,0 +1,63 @@
+package com.service.heartcalculate;
+
+import com.service.bean.CmdType;
+import com.service.bean.GpsType;
+import com.service.bean.Packet;
+import com.service.bean.Person;
+import com.service.bean.PersonSignal;
+
+/**
+ * Created by TaoMac on 2017/9/5.
+ */
+public class CHCalculate extends BasicsCalculate {
+	
+    public CHCalculate(PersonSignal signal, Person person, Packet packet) {
+        super(signal, person, packet);
+    }
+
+    @Override
+    public PersonSignal execute() {
+        super.execute();
+        
+        if(null != person.getLastGps()){
+    		if(packet.getGpsType().equals(GpsType.CHUN_HUI) && packet.getCmdType().equals(CmdType.CH_T2)){
+    			calculatePower();
+    		}
+    	    if(GpsType.CHUN_HUI.equals(packet.getGpsType()) && CmdType.CH_T28.equals(packet.getCmdType())){
+    	    	calculateHeartRate();
+    	    }
+    	    if(GpsType.CHUN_HUI.equals(packet.getGpsType()) && packet.getCmdType().equals(CmdType.CH_T83)){
+    	    	setFrequency();
+    	    }
+        }
+        if((packet.getGpsType().equals(GpsType.CHUN_HUI) && packet.getCmdType().equals(CmdType.CH_T82))
+			||(packet.getGpsType().equals(GpsType.CHUN_HUI) && packet.getCmdType().equals(CmdType.CH_T51))
+			||(packet.getGpsType().equals(GpsType.CHUN_HUI) && packet.getCmdType().equals(CmdType.CH_T86))){
+        	calculateAlarm();
+        }
+        return signal;
+    }
+    
+    
+    public void calculateAlarm(){
+		if(packet.getGpsType().equals(GpsType.CHUN_HUI) && packet.getCmdType().equals(CmdType.CH_T82)){
+			String daterAera = packet.getDataArea().substring(1,packet.getDataArea().length()-1);
+			if(person.getLastGps().getSimNo() == null){
+				person.getLastGps().setSimNo(daterAera);
+				System.out.println("simno is null");
+			}else if(person.getLastGps().getSimNo().equals(daterAera)){
+				System.out.println("simno is same");
+			}else{
+				person.getLastGps().setSimNo(daterAera);
+				System.out.println("simno is different");
+				signal.setChangeSim(1);
+				
+			}
+		}
+		if(packet.getGpsType().equals(GpsType.CHUN_HUI) && packet.getCmdType().equals(CmdType.CH_T51)){
+			//T51命令：关机操作报警
+			signal.setShutDown(1);
+		}
+		person.getLastGps().setGpsTime(packet.getGpsTime());
+	}
+}

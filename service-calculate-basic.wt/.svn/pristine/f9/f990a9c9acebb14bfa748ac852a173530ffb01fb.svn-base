@@ -1,0 +1,271 @@
+package com.service.tools;
+
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.ListOperations;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.stereotype.Repository;
+
+import com.alibaba.fastjson.JSON;
+import com.service.bean.PersonAlarm;
+import com.service.bean.PersonOnOffTime;
+import com.service.bean.PersonSignal;
+import com.service.bean.PersonSignalPath;
+
+import redis.clients.jedis.Jedis;
+
+@Repository
+public class RedisUtil {
+	
+	@Autowired
+	private StringRedisTemplate redisTemplate;
+	
+	private final Logger logger = Logger.getLogger(this.getClass());
+
+	public String get(String key) {
+		long y = System.currentTimeMillis();
+		String value = null;
+		try {
+
+			ValueOperations<String, String> ops = redisTemplate.opsForValue();
+			value = ops.get(key);
+			// long z = System.currentTimeMillis();
+			// System.out.println("key:" + key + " ,用时" + (z - y) + "毫秒.");
+		} catch (Exception e) {
+			long z = System.currentTimeMillis();
+			System.out.println("error key:" + key + " ,用时" + (z - y) + "毫秒.err");
+			throw e;
+		}
+
+		return value;
+	}
+
+	public void set(String key, String value) {
+		ValueOperations<String, String> valueops = redisTemplate.opsForValue();
+		valueops.set(key, value);
+	}
+
+	public void publish(String channel, String message) {
+		redisTemplate.convertAndSend(channel, message);
+	}
+
+	public Long llen(String key) {
+		ListOperations<String, String> valueops = redisTemplate.opsForList();
+		return valueops.size(key);
+	}
+
+	public List<String> lrange(String key, long start, long end) {
+		ListOperations<String, String> valueops = redisTemplate.opsForList();
+		return valueops.range(key, start, end);
+	}
+	
+	public void hmset(String key, String hashKey, String personAlarm) {
+		HashOperations<String,String, String> valueops = redisTemplate.opsForHash();
+		valueops.put(key, hashKey, personAlarm);
+	}
+	
+	public void hmdelete(String key, Object... hashKeys) {
+		HashOperations<String,String, String> valueops = redisTemplate.opsForHash();
+		valueops.delete(key, hashKeys);
+	}
+	
+	public Set<String> hmkeys(String key) {
+		HashOperations<String,String, String> valueops = redisTemplate.opsForHash();
+		return valueops.keys(key);
+	}
+	
+	public String hmget(String key,String hashKey) {
+		HashOperations<String,String, String> valueops = redisTemplate.opsForHash();
+		return valueops.get(key, hashKey);
+	}
+	
+	public boolean hmhasKey(String key,String hashKey) {
+		HashOperations<String,String, String> valueops = redisTemplate.opsForHash();
+		return valueops.hasKey(key, hashKey);
+	}
+
+	public void execute(RedisCallback<List<Object>> pipelineCallback) {
+		redisTemplate.execute(pipelineCallback);
+	}
+
+	
+	public void executeGeo(String key, ConcurrentLinkedQueue<PersonSignal> queue) {
+		int x = 0;
+		boolean isEnd = false;
+
+		do {
+			PersonSignal obj = queue.poll();
+			try {
+				//GEO坐标
+				RedisCallback<Long> pipelineCallback = new RedisCallback<Long>() {
+					@Override
+					public Long doInRedis(RedisConnection connection) throws DataAccessException {
+						Jedis jedis = (Jedis) connection.getNativeConnection();
+						return (Long) jedis.eval("return redis.call('GEOADD',KEYS[1],KEYS[2],KEYS[3],KEYS[4])", 4, key,
+								String.valueOf(obj.getBaiduLng()), String.valueOf(obj.getBaiduLat()), obj.getDtuNo());
+					}
+				};
+
+				redisTemplate.execute(pipelineCallback);
+				
+			} catch (Exception e) {
+				logger.error(e);
+			}
+			isEnd = queue.isEmpty();
+			x++;
+			if (x == 1000 || isEnd) {
+				logger.info("成功存储" + x + "条" + key + "数据");
+				x = 0;
+				break;
+			}
+		} while (!isEnd);
+	}
+
+	
+	public Long geoADD(String key, String longitude, String latitude, String dName) {
+		RedisCallback<Long> pipelineCallback = new RedisCallback<Long>() {
+			@Override
+			public Long doInRedis(RedisConnection connection) throws DataAccessException {
+				Jedis jedis = (Jedis) connection.getNativeConnection();
+				return (Long) jedis.eval("return redis.call('GEOADD',KEYS[1],KEYS[2],KEYS[3],KEYS[4])", 4, key,
+						longitude, latitude, dName);
+			}
+		};
+
+		return redisTemplate.execute(pipelineCallback);
+	}
+	
+	public void executeOne(String key, ConcurrentLinkedQueue<?> queue) {
+
+		RedisCallback<List<Object>> pipelineCallback = new RedisCallback<List<Object>>() {
+			@Override
+			public List<Object> doInRedis(RedisConnection connection) throws DataAccessException {
+				connection.openPipeline();
+				int x = 0;
+				boolean isEnd = false;
+
+				do {
+					Object obj = queue.poll();
+					try {
+
+						if (obj instanceof PersonAlarm) {
+							connection.rPush(key.getBytes(), JSON.toJSONString(((PersonAlarm) obj)).getBytes("UTF-8"));
+						} else if (obj instanceof PersonSignalPath) {
+							connection.rPush(key.getBytes(),
+									JSON.toJSONString(((PersonSignalPath) obj).getAll()).getBytes("UTF-8"));
+						} else if (obj instanceof PersonOnOffTime) {
+							connection.rPush(key.getBytes(),
+									JSON.toJSONString(((PersonOnOffTime) obj).getAll()).getBytes("UTF-8"));
+						}
+
+					} catch (UnsupportedEncodingException e) {
+						logger.error(e);
+					}
+					isEnd = queue.isEmpty();
+					x++;
+					if (x == 1000 || isEnd) {
+						logger.info("成功存储" + x + "条" + key + "数据");
+						x = 0;
+						break;
+					}
+				} while (!isEnd);
+				return connection.closePipeline();
+			}
+		};
+
+		redisTemplate.execute(pipelineCallback);
+	}
+	
+	public List<Double> geoPos(String key, String dName) {
+		RedisCallback<List<Double>> pipelineCallback = new RedisCallback<List<Double>>() {
+			@Override
+			public List<Double> doInRedis(RedisConnection connection) throws DataAccessException {
+				Jedis jedis = (Jedis) connection.getNativeConnection();
+				Object data = jedis.eval("return redis.call('GEOPOS',KEYS[1],KEYS[2])", 2, key, dName);
+				@SuppressWarnings("unchecked")
+				List<List<Double>> resultList = (List<List<Double>>) data;
+				if (resultList != null && resultList.size() > 0) {
+					return resultList.get(0);
+				}
+				return null;
+			}
+		};
+
+		return redisTemplate.execute(pipelineCallback);
+	}
+
+	public List<String> geoRadius(String key, double longitude, double latitude, int radius, String unit, boolean asc) {
+		RedisCallback<List<String>> pipelineCallback = new RedisCallback<List<String>>() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public List<String> doInRedis(RedisConnection connection) throws DataAccessException {
+				Jedis jedis = (Jedis) connection.getNativeConnection();
+				Object data = jedis.eval(
+						"return redis.call('GEORADIUS',KEYS[1],KEYS[2],KEYS[3],KEYS[4],KEYS[5],KEYS[6])", 6, key,
+						String.valueOf(longitude), String.valueOf(latitude), String.valueOf(radius), unit,
+						asc ? "ASC" : "DESC");
+				return (List<String>) data;
+			}
+		};
+
+		return redisTemplate.execute(pipelineCallback);
+	}
+
+	public Double geoDist(String key, String d1, String d2, String unit) {
+		RedisCallback<Double> pipelineCallback = new RedisCallback<Double>() {
+			@Override
+			public Double doInRedis(RedisConnection connection) throws DataAccessException {
+				Jedis jedis = (Jedis) connection.getNativeConnection();
+				return Double.valueOf((String) jedis
+						.eval("return redis.call('GEODIST',KEYS[1],KEYS[2],KEYS[3],KEYS[4])", 4, key, d1, d2, unit));
+			}
+		};
+
+		return redisTemplate.execute(pipelineCallback);
+	}
+
+	public String geoHash(String key, String dName) {
+		RedisCallback<String> pipelineCallback = new RedisCallback<String>() {
+			@Override
+			public String doInRedis(RedisConnection connection) throws DataAccessException {
+				Jedis jedis = (Jedis) connection.getNativeConnection();
+				Object data = jedis.eval("return redis.call('GEOHASH',KEYS[1],KEYS[2])", 2, key, dName);
+				@SuppressWarnings("unchecked")
+				List<String> resultList = (List<String>) data;
+				if (resultList != null && resultList.size() > 0) {
+					return resultList.get(0);
+				}
+				return null;
+			}
+		};
+
+		return redisTemplate.execute(pipelineCallback);
+	}
+	
+    public List<String> geoRadiusByMember(String key,String dName,String radius,String unit,boolean asc){  
+		RedisCallback<List<String>> pipelineCallback = new RedisCallback<List<String>>() {
+			@SuppressWarnings("unchecked")
+			@Override
+			public List<String> doInRedis(RedisConnection connection) throws DataAccessException {
+				Jedis jedis = (Jedis) connection.getNativeConnection();
+		        Object data = jedis.eval("return redis.call('GEORADIUSBYMEMBER',KEYS[1],KEYS[2],KEYS[3],KEYS[4],KEYS[5])", 5, key,dName,radius,unit,asc?"ASC":"DESC");  
+		        return (List<String>)data;  
+			}
+		};
+
+		return redisTemplate.execute(pipelineCallback);
+		
+
+   }  
+
+}

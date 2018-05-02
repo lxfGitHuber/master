@@ -1,0 +1,138 @@
+package com.service.calculate;
+
+import java.text.DecimalFormat;
+import java.util.Date;
+
+import com.service.bean.GpsSignalChange;
+import com.service.bean.OilBox;
+import com.service.bean.VehicleSignal;
+import com.service.dao.RedisDaoImpl;
+import com.service.tools.Tools;
+
+public class ChangeCalculate {
+	
+	private static DecimalFormat decimalFormat = new DecimalFormat("##0.00");
+	public static GpsSignalChange calculate(String vehicleId,String dtuNo,VehicleSignal signal,VehicleSignal mongoLastSignal,RedisDaoImpl redisDaoImpl) throws Exception{
+		
+			if(null==mongoLastSignal) return null;
+			GpsSignalChange change = new GpsSignalChange(vehicleId,dtuNo);
+			try {
+				WorkStatus(change,mongoLastSignal);
+			} catch (Exception e) {
+				throw new Exception(e);
+			}
+			try {
+				StopStatus(change,mongoLastSignal);
+			} catch (Exception e) {
+				throw new Exception(e);
+			}
+			try {
+				TimeSpan(change,signal,mongoLastSignal);
+			} catch (Exception e) {
+				throw new Exception(e);
+			}
+			try {
+				FuelCostly(change,signal,mongoLastSignal,redisDaoImpl);
+			} catch (Exception e) {
+				throw new Exception(e);
+			}
+			try {
+				MileChange(change,signal,mongoLastSignal);
+			} catch (Exception e) {
+				throw new Exception(e);
+			}
+			try {
+				AccStatus(change,signal);
+			} catch (Exception e) {
+				throw new Exception(e);
+			}
+			return change;
+	}
+	
+	private static void WorkStatus(GpsSignalChange change,VehicleSignal signal) throws Exception {
+		try{
+			change.setWorkStatus(signal.getWorkStatus());
+		}catch(Exception e){
+			throw new Exception("workStatus change calculate fail.",e);
+		}
+	}
+	
+	private static void StopStatus(GpsSignalChange change,VehicleSignal signal) throws Exception {
+		//1 停留 0 非停留
+		try{
+			double n = signal.getSpeed();
+			change.setStopStatus(n>0?0:1);
+		}catch(Exception e){
+			throw new Exception("stopStatus change calculate fail.",e);
+		}
+	}
+	
+	private static void TimeSpan(GpsSignalChange change,VehicleSignal signal,VehicleSignal mongoLastSignal) throws Exception {
+		try{
+			Date l = mongoLastSignal.getGpsTime();
+			Date n = signal.getGpsTime();
+			int span = (int)(n.getTime() -  l.getTime())/1000;
+			change.setGpsTime(n);
+			if(Tools.isSameDay(l,n)){
+				change.setTimeSpan(span>0?span:0);
+			}else {
+				change.setTimeSpan(0);
+			}
+			
+		}catch(Exception e){
+			throw new Exception("timeSpan change calculate fail.",e);
+		}
+	}
+	
+	private static void FuelCostly(GpsSignalChange change,VehicleSignal signal,VehicleSignal mongoLastSignal,RedisDaoImpl redisDaoImpl) throws Exception {
+		try{
+			OilBox oilbox = redisDaoImpl.getOilBox(change.getDtuNo());
+			if(oilbox == null){
+				change.setFuelCostly(0);
+				change.setFuelAdd(0);
+				return;
+			}
+			double l = Double.parseDouble(decimalFormat.format(oilbox.getOilAmt(Integer.parseInt(mongoLastSignal.getOilInt()) + Integer.parseInt(mongoLastSignal.getOilDec())/100.00)));
+			double n = Double.parseDouble(decimalFormat.format(oilbox.getOilAmt(Integer.parseInt(signal.getOilInt()) + Integer.parseInt(signal.getOilDec())/100.00)));
+			/*if(n<l&&l-n>2){
+				akpMap.put("OilInt", lastAkpMap.get("OilInt"));
+				akpMap.put("OilDec", lastAkpMap.get("OilDec"));
+			}*/
+//			FileConser.saveResolve(change.dtuNo, "akpmapoil n:"+n+",akpmapoil l:"+l,"" );
+			if(n>l){
+				change.setFuelCostly(0);
+				change.setFuelAdd(n-l>5?n-l:0);
+			}else{
+				change.setFuelCostly(l-n<2?l-n:0);
+				change.setFuelAdd(0);
+			}
+		}catch(Exception e){
+			throw new Exception("fuelCostly change calculate fail.",e);
+		}
+	}
+	
+	private static void MileChange(GpsSignalChange change,VehicleSignal signal,VehicleSignal mongoLastSignal) throws Exception {
+		try{
+			double l = mongoLastSignal.getCurMile();
+			double n = signal.getCurMile();
+			if(n>l)
+			{
+				change.setMileChange(n-l);
+			}else{
+				change.setMileChange(0);
+			}
+			
+			//停止的时候，milechange  = 0
+			change.setMileChange(change.getStopStatus() == 1?0:change.getMileChange());
+		}catch(Exception e){
+			throw new Exception("mileChange change calculate fail.",e);
+		}
+	}
+	private static void AccStatus(GpsSignalChange change,VehicleSignal signal) throws Exception {
+		try{
+			change.setAccStatus(signal.getAccStatus());
+		}catch(Exception e){
+			throw new Exception("workStatus change calculate fail.",e);
+		}
+	}
+}

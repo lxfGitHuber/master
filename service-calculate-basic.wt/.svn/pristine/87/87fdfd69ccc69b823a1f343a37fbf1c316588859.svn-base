@@ -1,0 +1,85 @@
+package com.service.redis.pubsub;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.Message;
+import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.service.cache.CacheCenter;
+import com.service.dao.ProFrontSendMessage;
+import com.service.webservice.out.NoticeMessageResult;
+import com.service.webservice.out.WebServiceServerNoticeMessageImplService;
+
+/**
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+@Component
+public class RedisMessageListener implements MessageListener{
+	
+	@Autowired
+	WebServiceServerNoticeMessageImplService stub;
+	
+	@Autowired
+	CacheCenter cacheCenter;
+	
+	@Autowired
+    KafkaTemplate kafkaTemplate;
+
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	public static List<String> messageList = new ArrayList();
+	
+    public void onMessage(final Message message, final byte[] pattern) {
+        messageList.add(message.toString());
+        System.out.println("Message received: " + new String(message.getBody()));
+        handleMessage(message);
+    }
+    public void handleMessage(Message message) {  
+    	
+    	String target = null;
+    	JSONArray args = null;
+    	
+    	try {
+    		logger.info("MessageDelegateListenerImpl2 handleMessage" + message.toString());
+    		
+         	JSONObject jsonObject = JSON.parseObject(message.toString());
+         	target = jsonObject.getString("target");
+         	args = jsonObject.getJSONArray("args");     	
+         	 
+         	if("frontsendorder".equals(target)){ 
+            	ProFrontSendMessage  pfsm = new ProFrontSendMessage();
+            	pfsm.sendMessages(args.getString(0));
+            }else if("LyzhDtu".equals(target)){ 
+            	String smsno = JSON.parseObject(args.getString(0)).getString("SIMCard");
+            	String info = JSON.parseObject(args.getString(0)).getString("DownContent");
+            	String DtuNo = JSON.parseObject(args.getString(0)).getString("DtuNo");
+            	NoticeMessageResult noticeMessageResult = null;
+            	NoticeMessageResult noticeMessageResultt = null;
+            	cacheCenter.lastModelCache.put(DtuNo, "0");
+            	if(info.contains(",")&&info.contains("S80")){
+            		String[] sendorder = info.split(",");
+            		 noticeMessageResult=stub.getWebServiceServerNoticeMessageImplPort().sendSMS(smsno, sendorder[0]);
+            		 noticeMessageResultt=stub.getWebServiceServerNoticeMessageImplPort().sendSMS(smsno, sendorder[1]);
+            		 cacheCenter.lastModelCache.put(DtuNo, sendorder[1]);
+            		 System.out.println(noticeMessageResult.getCode());
+            	}else{
+            		NoticeMessageResult noticeMessageResulttt=stub.getWebServiceServerNoticeMessageImplPort().sendSMS(smsno, info);
+            		System.out.println(noticeMessageResulttt.getCode());
+            	}
+            }
+    		
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+    } 
+}

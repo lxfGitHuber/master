@@ -1,0 +1,43 @@
+package com.service.bean;
+
+/**
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class Const {
+    public static final String TOPIC_PARSE_HB_GPS = "TOPIC_PARSE_HB_GPS";
+    public static final String TOPIC_PARSE_Front_Page = "TOPIC_PARSE_Front_Page";
+    public static final String TOPIC_PARSE_GT03B_GPS = "TOPIC_PARSE_GT03B_GPS";
+    public static final String TOPIC_PARSE_WATCH_GPS = "TOPIC_PARSE_WATCH_GPS";
+    public static final String TOPIC_PARSE_CITY009_GPS = "TOPIC_PARSE_CITY009_GPS";
+    public static final String TOPIC_PARSE_WATCH_S3G = "TOPIC_PARSE_WATCH_S3G";
+    public static final String TOPIC_PARSE_CHUN_HUI = "TOPIC_PARSE_CHUN_HUI";
+
+    public static final String TOPIC_NETTY_REPLY_BY_CHANNEL_ID = "TOPIC_NETTY_REPLY_BY_CHANNEL_ID";
+    public static final String TOPIC_NETTY_REPLY_BY_DTU_NO = "TOPIC_NETTY_REPLY_BY_DTU_NO";
+
+    public static final String TOPIC_NEED_HEARTBEAT_CALCULATE = "TOPIC_NEED_HEARTBEAT_CALCULATE";
+    
+    public static final String TOPIC_PACKET_TO_MONGO = "TOPIC_PACKET_TO_MONGO";
+    public static final String TOPIC_NEED_BASICS_CALCULATE = "TOPIC_NEED_BASICS_CALCULATE";
+    public static final String TOPIC_NEED_ALARM_CALCULATE = "TOPIC_NEED_ALARM_CALCULATE";
+    public static final String TOPIC_VEHICLE_NEED_ALARM_CALCULATE = "TOPIC_VEHICLE_NEED_ALARM_CALCULATE";
+    public static final String TOPIC_PERSON_CALCULATE_GIS = "TOPIC_PERSON_CALCULATE_GIS";
+    public static final String TOPIC_VEHICLE_GIS_CALCULATE = "TOPIC_VEHICLE_GIS_CALCULATE";
+    public static final String TOPIC_NEED_BASICS_CALCULATE_FF = "TOPIC_NEED_BASICS_CALCULATE_FF";
+    
+    public static final String CHANNEL_ID = "CHANNEL_ID";
+    public static final String REPLYTOPIC = "ReplyTopic";
+    public static final String DTU_NO = "DTU_NO";
+    public static final String UUID = "UUID";
+    public static final String GPS_TIME = "GPS_TIME";
+    public static final String RAW_DATA = "RAW_DATA";
+    public static final String REPLY_MESSAGE = "REPLY_MESSAGE";
+
+    public static final String COLLECTION_PERSON_PACKETS =  "person_packets";
+    public static final String COLLECTION_PERSON_SIGNALS =  "person_signals";
+    public static final String COLLECTION_VEHICLE_PACKETS =  "vehicle_packets";
+    public static final String COLLECTION_VEHICLE_SIGNALS =  "vehicle_signals";
+    public static final String COLLECTION_VEHICLE_CHANGESIGNALS =  "vehicle_changesignals";
+
+}

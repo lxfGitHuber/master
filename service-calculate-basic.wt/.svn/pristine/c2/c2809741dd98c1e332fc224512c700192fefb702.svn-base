@@ -1,0 +1,188 @@
+package com.service.bean;
+
+import java.util.*;
+/**
+ * 人员
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class Person {
+
+	/**
+	 * 主键
+	 */
+	private String personId;
+	/**
+	 * 姓名  --这个好像无用，对应redis只看到personName
+	 */
+	private String name;
+	/**
+	 * 人员姓名
+	 */
+	private String personName;
+	
+	/**
+	 * 项目号
+	 */
+	private String projectNo;
+	
+	/**
+	 * 项目名称
+	 */
+	private String projectName;
+
+	/**
+	 * 证件号
+	 */
+	private String identityNo;
+	/**
+	 * 终端号
+	 */
+	private String dtuNo;
+	/**
+	 * 公司
+	 */
+//	public Company company;
+	private String companyCode;
+	private String place;
+	private String companyName;
+	/**
+	 * 上一条Gps数据
+	 */
+	private PersonSignal lastGps;
+	/**
+	 * 人员绑定区域集合
+	 */
+	private Map<String, Area> areaMap = new HashMap<String, Area>();
+	/**
+	 * 人员报警规则</br>
+	 * Key: ruleType
+	 */
+	private Map<String, PersonAlarmRule> rules = new HashMap<String, PersonAlarmRule>();
+	/**
+	 * 人员当天排班</br>
+	 */
+	private List<DutyDetail> details = new ArrayList<DutyDetail>();
+	
+	private Date lastGpsTime;
+
+	public String getPersonId() {
+		return personId;
+	}
+
+	public void setPersonId(String personId) {
+		this.personId = personId;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getPersonName() {
+		return personName;
+	}
+
+	public void setPersonName(String personName) {
+		this.personName = personName;
+	}
+
+	public String getProjectNo() {
+		return projectNo;
+	}
+
+	public void setProjectNo(String projectNo) {
+		this.projectNo = projectNo;
+	}
+
+	public String getProjectName() {
+		return projectName;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+
+	public String getIdentityNo() {
+		return identityNo;
+	}
+
+	public void setIdentityNo(String identityNo) {
+		this.identityNo = identityNo;
+	}
+
+	public String getDtuNo() {
+		return dtuNo;
+	}
+
+	public void setDtuNo(String dtuNo) {
+		this.dtuNo = dtuNo;
+	}
+
+	public String getCompanyCode() {
+		return companyCode;
+	}
+
+	public void setCompanyCode(String companyCode) {
+		this.companyCode = companyCode;
+	}
+
+	public String getPlace() {
+		return place;
+	}
+
+	public void setPlace(String place) {
+		this.place = place;
+	}
+
+	public String getCompanyName() {
+		return companyName;
+	}
+
+	public void setCompanyName(String companyName) {
+		this.companyName = companyName;
+	}
+
+	public PersonSignal getLastGps() {
+		return lastGps;
+	}
+
+	public void setLastGps(PersonSignal lastGps) {
+		this.lastGps = lastGps;
+	}
+
+	public Map<String, Area> getAreaMap() {
+		return areaMap;
+	}
+
+	public void setAreaMap(Map<String, Area> areaMap) {
+		this.areaMap = areaMap;
+	}
+
+	public Map<String, PersonAlarmRule> getRules() {
+		return rules;
+	}
+
+	public void setRules(Map<String, PersonAlarmRule> rules) {
+		this.rules = rules;
+	}
+
+	public List<DutyDetail> getDetails() {
+		return details;
+	}
+
+	public void setDetails(List<DutyDetail> details) {
+		this.details = details;
+	}
+
+	public Date getLastGpsTime() {
+		return lastGpsTime;
+	}
+
+	public void setLastGpsTime(Date lastGpsTime) {
+		this.lastGpsTime = lastGpsTime;
+	}
+}

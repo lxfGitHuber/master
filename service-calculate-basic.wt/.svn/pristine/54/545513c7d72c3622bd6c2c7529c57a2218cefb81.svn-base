@@ -1,0 +1,27 @@
+package com.service.bean;
+
+/**
+ * @author lxf
+ * @Date 2017年12月11日
+ */
+public class OrderMessage {
+
+	public int id;
+	
+	public String SIMCard;
+	
+	public String DownContent;
+	
+	public String TypeNo;
+	
+	
+	public Object[] getAll() {
+		Object[] arrs = new Object[4];
+		arrs[0] = String.valueOf(this.SIMCard);
+		arrs[1] = String.valueOf(this.DownContent);
+		arrs[2] = String.valueOf(this.id);
+		arrs[3] = String.valueOf(this.TypeNo);
+		
+		return arrs;
+	}
+}

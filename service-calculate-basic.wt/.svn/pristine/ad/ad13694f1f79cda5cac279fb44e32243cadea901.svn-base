@@ -1,0 +1,143 @@
+package com.service.bean;
+
+/**
+ * 数据包协议号常量</br>
+ * 上行：终端主动发送给服务端</br>
+ * 下行：服务端主动发送给终端
+ * @author lj
+ * Created on 2015年6月12日
+ */
+public class CmdType {
+	// -------------------------------------------HB-------------------------------------------
+	/**
+	 * 定位数据包，上行，不需响应
+	 */
+	public static final String RTLS_PACKET = "V1";
+	/**
+	 * 位置请求包，上行，需要响应
+	 */
+	public static final String POSITION_REQUEST_PACKET = "VI1";
+	/**
+	 * 位置响应包，下行，不需响应
+	 */
+	public static final String POSITION_RESPONSE_PACKET = "VI";
+	/**
+	 * 指令确认包，上行，不需响应
+	 */
+	public static final String CONFIRM_COMMAND_PACKET = "V4";
+
+	// -------------------------------------------FRONT-------------------------------------------
+	/**
+	 * 刷新缓存
+	 */
+	public static final String REFRESH_CACHE_PACKET = "FA";
+	
+	// -------------------------------------------GT03B-------------------------------------------
+	/**
+	 * 登录信息包
+	 */
+	public static final String LOGIN_COMMAND = "01";
+	/**
+	 * 定位数据包
+	 */
+	public static final String LOCATION_DATA_COMMAND = "22";
+	/**
+	 * 状态信息包(心跳包)
+	 */
+	public static final String STATE_MESSAGE_COMMAND = "13";
+	
+	// -------------------------------------------Watch-------------------------------------------
+	/**
+	 * 定时上传数据
+	 */
+	public static final String AUT_COMMAND = "AUT";
+	
+	// -------------------------------------------City009-------------------------------------------
+	/**
+	 * 心跳包
+	 */
+	public static final String HEART_BEAT_COMMAND = "0001";
+	/**
+	 * 获取IP端口(类似注册登录命令)
+	 */
+	public static final String GET_IPPORT_COMMAND = "0002";
+	/**
+	 * 终端返回版本号等信息(在这里作用类似于心跳包)
+	 */
+	public static final String SHOW_VERSION_COMMAND = "9991";
+	/**
+	 * 定位数据包
+	 */
+	public static final String GPS_DATA_COMMAND = "9944";
+	/**
+	 * 手表三基同创协议 3G心跳包
+	 */
+	public static final String S3GHEART_COMMAND = "LK";
+	
+	/**
+	 * 手表三基同创协议 手表检测服务器语音包
+	 */
+	public static final String S3GVOICE_COMMAND = "TKQ";
+	
+	/**
+	 * 手表三基同创协议 手表检测服务器语音包
+	 */
+	public static final String S3GVOICE2_COMMAND = "TKQ2";
+	
+	/**
+	 * 定位数据包
+	 */
+	public static final String S3G_UD_COMMAND = "UD";
+	/**
+	 * 定位数据包
+	 */
+	public static final String S3G_UD2_COMMAND = "UD2";
+	
+	
+	/**********************春晖手表协议区*******************************/
+	//终端登录请求
+	public static final String CH_T1 = "T1";
+	
+	//终端上报心跳
+	public static final String CH_T2 = "T2";
+	
+	//终端回复设置地址指令
+	public static final String CH_T4 = "T4";
+	
+	//终端上传LBS数据指令
+	public static final String CH_T29 = "T29";
+	
+	//终端上传关机指令
+		public static final String CH_T51 = "T51";
+		
+		//终端上传心率指令
+		public static final String CH_T28 = "T28";
+		
+		//终端获取天气指令
+		public static final String CH_T47 = "T47";
+		
+		//终端上报考勤指令
+		public static final String CH_T81 = "T81";
+		
+		//终端上报sim卡号
+		public static final String CH_T82 = "T82";
+		
+		//终端回复待机模式设置
+		public static final String CH_T83 = "T83";
+		
+		//终端回复关机时间设置
+		public static final String CH_T84 = "T84";
+		
+		//终端上传跌倒报警
+		public static final String CH_T86 = "T86";
+		
+		//服务器下发 发送频率指令
+		public static final String CH_S80 = "S80";
+		
+		//服务器下发待机模式指令
+		public static final String CH_S83 = "S83";
+		
+		//服务器下发关机指令
+		public static final String CH_S84 = "S84";
+	
+}

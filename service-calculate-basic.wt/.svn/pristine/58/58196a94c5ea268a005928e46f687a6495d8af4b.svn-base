@@ -1,0 +1,76 @@
+package com.service.bean;
+
+import java.sql.Timestamp;
+
+public class PersonOnOffTime {
+
+	private String dtuNo;
+	
+	private Timestamp onofftime;
+	
+	private int type;
+	
+	private String companycode;
+	
+	
+	
+	public Object[] getAll() {
+		Object[] arrs = new Object[4];
+		arrs[0] = String.valueOf(this.dtuNo);
+		arrs[1] = this.onofftime == null ? this.onofftime : "'" + new Timestamp(this.onofftime.getTime()) + "'";
+		arrs[2] = String.valueOf(this.type);
+		arrs[3] = String.valueOf(this.companycode);
+		
+		
+		return arrs;
+	}
+
+
+
+	public String getDtuNo() {
+		return dtuNo;
+	}
+
+
+
+	public void setDtuNo(String dtuNo) {
+		this.dtuNo = dtuNo;
+	}
+
+
+
+	public Timestamp getOnofftime() {
+		return onofftime;
+	}
+
+
+
+	public void setOnofftime(Timestamp onofftime) {
+		this.onofftime = onofftime;
+	}
+
+
+
+	public int getType() {
+		return type;
+	}
+
+
+
+	public void setType(int type) {
+		this.type = type;
+	}
+
+
+
+	public String getCompanycode() {
+		return companycode;
+	}
+
+
+
+	public void setCompanycode(String companycode) {
+		this.companycode = companycode;
+	}
+	
+}

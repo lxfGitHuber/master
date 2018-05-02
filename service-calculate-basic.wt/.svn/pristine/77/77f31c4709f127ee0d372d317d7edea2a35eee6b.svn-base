@@ -1,0 +1,31 @@
+package com.service.bean;
+
+import java.util.List;
+
+public class OilBox {
+	
+	public String oilBoxId;
+
+	public List<Standard> standards;
+	
+	public double getOilAmt(double fuelHeight){
+		if(fuelHeight==0) return 0;
+		if(fuelHeight>=standards.get(standards.size()-1).oilHeight) return standards.get(standards.size()-1).oilValue;
+		int i = 0;
+		for (;i<standards.size();) {
+			if(standards.get(i).oilHeight >= fuelHeight) break;
+			i++;
+		}
+		if(i==0)
+			return cal(new Standard(),standards.get(i),fuelHeight);
+		else{
+			return cal(standards.get(i-1),standards.get(i),fuelHeight);
+		}
+	}
+	
+	private double cal(Standard first, Standard second, double fuelHeight) {
+		double x = (second.oilHeight - first.oilHeight) / (second.oilValue - first.oilValue);
+		double y = (fuelHeight - second.oilHeight) / x + second.oilValue;
+		return y;
+	}
+}

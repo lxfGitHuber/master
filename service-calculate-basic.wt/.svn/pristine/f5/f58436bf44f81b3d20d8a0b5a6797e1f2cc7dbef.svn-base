@@ -1,0 +1,565 @@
+package com.service.bean;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import com.alibaba.fastjson.annotation.JSONField;
+
+/**
+ * 人员Gps数据
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class PersonSignal implements Cloneable {
+	
+	@JSONField(serialize = false)
+	private String id;
+	/**
+	 * 主键
+	 */
+	private String signalId;
+	/**
+	 * gps时间
+	 */
+	private Date gpsTime;
+	/**
+	 * 速度
+	 */
+	private double speed;
+	
+	/**
+	 * Gps类型
+	 */
+	private String gpsType;
+	
+	/**
+	 * gps经度
+	 */
+	private double lng;
+	/**
+	 * gps纬度
+	 */
+	private double lat;
+	/**
+	 * 百度经度
+	 */
+	private double baiduLng;
+	/**
+	 * 百度纬度
+	 */
+	private double baiduLat;
+	/**
+	 * 人员ID(外键)
+	 */
+	private String personId;
+	/**
+	 * 终端号
+	 */
+	private String dtuNo;
+	/**
+	 * 总里程
+	 */
+	private double curMile;
+	/**
+	 * 今日里程
+	 */
+	private double todayMile;
+	/**
+	 * 总里程
+	 */
+//	private double totalMile;
+	/**
+	 * 公司代码
+	 */
+	private String companyCode;
+	/**
+	 * 百度详细位置
+	 */
+	public String baiduLocation;
+	/**
+	 * 坐标转换标志
+	 */
+	public int isPosition;
+	/**
+	 * 地址转换标志
+	 */
+	public int isLocation;
+	/**
+	 * Gps数据是否有效(1:有效, 0:无效, -1:异常数据)
+	 */
+	private String gpsAvail;
+	/**
+	 * 方位
+	 */
+	private double orientation;
+	/**
+	 * 原始数据
+	 */
+	private String rawData;
+	/**
+	 * 是否在工作状态
+	 */
+	private int isInWork;
+	/**
+	 * 是否在工作区域
+	 */
+	private int isInArea;
+	/**
+	 * 当前区域所在区域集合(可能会在交集中)
+	 */
+	private List<String> areaIds = new ArrayList<String>();
+	/**
+	 * 在线当日作业停留时间
+	 */
+	private long stopTime;
+	/**
+	 * 持续时间
+	 */
+	@JSONField(serialize = false)
+	private double durationtime = 0;
+	/**
+	 * 是否有报警
+	 */
+	private int isHandleAlarm;
+	/**
+	 * 报警内容
+	 */
+	private String alarmInfo;
+	
+	public String getGpsType() {
+		return gpsType;
+	}
+
+	public void setGpsType(String gpsType) {
+		this.gpsType = gpsType;
+	}
+
+	/**
+	 * 低电量报警
+	 */
+	
+	private int lowPower;
+	
+	/**
+	 * 关机操作报警
+	 */
+	
+	private int shutDown;
+	
+	/**
+	 * Sim卡更换报警
+	 */
+	
+	private int changeSim;
+	
+	/**
+	 * 心率异常报警
+	 */
+	@JSONField(serialize = false)
+	private int abnormalHeartRate;
+	
+	/**
+	 * 心率
+	 */
+	private int heartRate;
+	
+	/**
+	 * 电量
+	 */
+	private int watchPower;
+	
+	/**
+	 * 当前模式0:正常工作状态（连续工作） 1：省电模式（待机）
+	 */
+	private int curentModel;
+	
+	/**
+	 * 发送频率
+	 */
+	private int transmitFrequency;
+	
+	/**
+	 * sim卡号
+	 */
+	private String simNo;
+	
+	/**
+	 * 关机时间
+	 */
+	private String downtime;
+	
+	/**
+	 * 命令类别
+	 */
+	private String cmdType;
+	
+	
+	public String getSignalId() {
+		return signalId;
+	}
+
+	public void setSignalId(String signalId) {
+		this.signalId = signalId;
+	}
+
+	public Date getGpsTime() {
+		return gpsTime;
+	}
+
+	public void setGpsTime(Date gpsTime) {
+		this.gpsTime = gpsTime;
+	}
+
+	public double getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(double speed) {
+		 this.speed = speed;
+	}
+
+	public double getLng() {
+		return lng;
+	}
+
+	public void setLng(double lng) {
+		this.lng = lng;
+	}
+
+	public double getLat() {
+		return lat;
+	}
+
+	public void setLat(double lat) {
+		this.lat = lat;
+	}
+
+	public double getBaiduLng() {
+		return baiduLng;
+	}
+
+	public void setBaiduLng(double baiduLng) {
+		this.baiduLng = baiduLng;
+	}
+
+	public double getBaiduLat() {
+		return baiduLat;
+	}
+
+	public void setBaiduLat(double baiduLat) {
+		this.baiduLat = baiduLat;
+	}
+
+	public String getPersonId() {
+		return personId;
+	}
+
+	public void setPersonId(String personId) {
+		this.personId = personId;
+	}
+
+	public String getDtuNo() {
+		return dtuNo;
+	}
+
+	public void setDtuNo(String dtuNo) {
+		this.dtuNo = dtuNo;
+	}
+
+	public double getCurMile() {
+		return curMile;
+	}
+
+	public void setCurMile(double curMile) {
+		this.curMile = curMile;
+	}
+
+	public double getTodayMile() {
+		return todayMile;
+	}
+
+	public void setTodayMile(double todayMile) {
+		this.todayMile = todayMile;
+	}
+
+	public String getCompanyCode() {
+		return companyCode;
+	}
+
+	public void setCompanyCode(String companyCode) {
+		this.companyCode = companyCode;
+	}
+
+	public String getBaiduLocation() {
+		return baiduLocation;
+	}
+
+	public void setBaiduLocation(String baiduLocation) {
+		this.baiduLocation = baiduLocation;
+	}
+
+	public int getIsPosition() {
+		return isPosition;
+	}
+
+	public void setIsPosition(int isPosition) {
+		this.isPosition = isPosition;
+	}
+
+	public int getIsLocation() {
+		return isLocation;
+	}
+
+	public void setIsLocation(int isLocation) {
+		this.isLocation = isLocation;
+	}
+
+	public String getGpsAvail() {
+		return gpsAvail;
+	}
+
+	public void setGpsAvail(String gpsAvail) {
+		this.gpsAvail = gpsAvail;
+	}
+
+	public double getOrientation() {
+		return orientation;
+	}
+
+	public void setOrientation(double orientation) {
+		this.orientation = orientation;
+	}
+
+	public String getRawData() {
+		return rawData;
+	}
+
+	public void setRawData(String rawData) {
+		this.rawData = rawData;
+	}
+
+	public int getIsInWork() {
+		return isInWork;
+	}
+
+	public void setIsInWork(int isInWork) {
+		this.isInWork = isInWork;
+	}
+
+	public int getIsInArea() {
+		return isInArea;
+	}
+
+	public void setIsInArea(int isInArea) {
+		this.isInArea = isInArea;
+	}
+
+	public List<String> getAreaIds() {
+		return areaIds;
+	}
+
+	public void setAreaIds(List<String> areaIds) {
+		this.areaIds = areaIds;
+	}
+
+	public long getStopTime() {
+		return stopTime;
+	}
+
+	public void setStopTime(long stopTime) {
+		this.stopTime = stopTime;
+	}
+
+	public double getDurationtime() {
+		return durationtime;
+	}
+
+	public void setDurationtime(double durationtime) {
+		this.durationtime = durationtime;
+	}
+
+	public int getIsHandleAlarm() {
+		return isHandleAlarm;
+	}
+
+	public void setIsHandleAlarm(int isHandleAlarm) {
+		this.isHandleAlarm = isHandleAlarm;
+	}
+
+	public String getAlarmInfo() {
+		return alarmInfo;
+	}
+
+	public void setAlarmInfo(String alarmInfo) {
+		this.alarmInfo = alarmInfo;
+	}
+
+	public int getLowPower() {
+		return lowPower;
+	}
+
+	public void setLowPower(int lowPower) {
+		this.lowPower = lowPower;
+	}
+
+	public int getShutDown() {
+		return shutDown;
+	}
+
+	public void setShutDown(int shutDown) {
+		this.shutDown = shutDown;
+	}
+
+	public int getChangeSim() {
+		return changeSim;
+	}
+
+	public void setChangeSim(int changeSim) {
+		this.changeSim = changeSim;
+	}
+
+	public int getAbnormalHeartRate() {
+		return abnormalHeartRate;
+	}
+
+	public void setAbnormalHeartRate(int abnormalHeartRate) {
+		this.abnormalHeartRate = abnormalHeartRate;
+	}
+
+	public int getHeartRate() {
+		return heartRate;
+	}
+
+	public void setHeartRate(int heartRate) {
+		this.heartRate = heartRate;
+	}
+
+	public int getWatchPower() {
+		return watchPower;
+	}
+
+	public void setWatchPower(int watchPower) {
+		this.watchPower = watchPower;
+	}
+
+	public int getCurentModel() {
+		return curentModel;
+	}
+
+	public void setCurentModel(int curentModel) {
+		this.curentModel = curentModel;
+	}
+
+	public int getTransmitFrequency() {
+		return transmitFrequency;
+	}
+
+	public void setTransmitFrequency(int transmitFrequency) {
+		this.transmitFrequency = transmitFrequency;
+	}
+
+	public String getSimNo() {
+		return simNo;
+	}
+
+	public void setSimNo(String simNo) {
+		this.simNo = simNo;
+	}
+
+	public String getDowntime() {
+		return downtime;
+	}
+
+	public void setDowntime(String downtime) {
+		this.downtime = downtime;
+	}
+
+	public String getCmdType() {
+		return cmdType;
+	}
+
+	public void setCmdType(String cmdType) {
+		this.cmdType = cmdType;
+	}
+
+	
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	/**
+	 * 重写equals()方法</br>
+	 * 如果两条GPS数据，终端编号、Gps时间、经纬度、人员Id、里程以及公司编号都相同的情况下，认为两条Gps数据相等
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof PersonSignal)) {
+			return false;
+		}
+		PersonSignal signal = (PersonSignal) obj;
+		if (signal.dtuNo.equals(dtuNo) && signal.gpsTime == gpsTime
+				&& signal.lat == lat && signal.lng == lng && signal.personId.equals(personId)
+				&& signal.curMile == curMile && signal.companyCode.equals(companyCode)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		int result = 17;
+		result = 37 * result + objectHashCode(gpsTime);
+		return result;
+	}
+
+	private int objectHashCode(Object obj) {
+		if (null == obj)
+			return 0;
+		return obj.hashCode();
+	}
+	
+	@Override
+	public Object clone() throws CloneNotSupportedException {
+			return super.clone();
+	}
+
+//	public Object[] getAll() {
+//		Object[] arrs = new Object[27];
+//		arrs[0] = "'" + this.signalId + "'";
+//		arrs[1] = this.gpsTime == null ? this.gpsTime : "'" + new Timestamp(this.gpsTime.getTime()) + "'";
+//		arrs[2] = String.valueOf(this.speed);
+//		arrs[3] = String.valueOf(this.lng);
+//		arrs[4] = String.valueOf(this.lat);
+//		arrs[5] = String.valueOf(this.baiduLng);
+//		arrs[6] = String.valueOf(this.baiduLat);
+//		arrs[7] = this.personId == null ? this.personId : "'" + this.personId + "'";
+//		arrs[8] = this.dtuNo == null ? this.dtuNo : "'" + this.dtuNo + "'";
+//		arrs[9] = String.valueOf(this.curMile);
+////		arrs[11] = String.valueOf(this.totalMile);
+//		arrs[10] = "'" + this.companyCode + "'";
+//		arrs[11] = this.baiduLocation == null ? null : "'" + this.baiduLocation + "'";
+//		arrs[12] = this.isPosition;
+//		arrs[13] = this.isLocation;
+//		arrs[14] = "'" + this.gpsAvail + "'";
+//		arrs[15] = String.valueOf(this.orientation);
+//		arrs[16] = "'" + this.rawData + "'";
+//		arrs[17] = this.isInWork;
+//		arrs[18] = this.isInArea;
+//		arrs[19] = String.valueOf(this.stopTime);
+//		arrs[20] = String.valueOf(this.todayMile);
+//		arrs[21] = isHandleAlarm;
+//		arrs[22] = alarmInfo == null ? null : "'" + alarmInfo + "'";
+//		arrs[23] = this.heartRate;
+//		arrs[24] = this.watchPower;
+//		arrs[25] = this.curentModel;
+//		arrs[26] = String.valueOf(this.transmitFrequency);
+//		return arrs;
+//	}
+
+}

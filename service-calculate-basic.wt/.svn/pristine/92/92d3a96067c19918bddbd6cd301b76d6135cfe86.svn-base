@@ -1,0 +1,66 @@
+package com.service.bean;
+
+/**
+ * @author lxf
+ * @Date 2017年11月27日
+ */
+public class ChunHuiPacket {
+	
+	//终端类型	数字表示，其中1代表LCH-B
+	private String dtuType;
+	//版本号	数字表示，第一版本为1
+	private String version;
+	//加密方式	0代表不加密，1代表MD5加密方式
+	private String secretType;
+	//识别码	标识每条指令
+	private String singleCommand;
+	//imei	设备唯一标识
+	private String dtuNo;
+	//命令
+	private String command;
+	//参数	参数之间以逗号（,）分割
+	private String params;
+	public String getDtuType() {
+		return dtuType;
+	}
+	public void setDtuType(String dtuType) {
+		this.dtuType = dtuType;
+	}
+	public String getVersion() {
+		return version;
+	}
+	public void setVersion(String version) {
+		this.version = version;
+	}
+	public String getSecretType() {
+		return secretType;
+	}
+	public void setSecretType(String secretType) {
+		this.secretType = secretType;
+	}
+	public String getSingleCommand() {
+		return singleCommand;
+	}
+	public void setSingleCommand(String singleCommand) {
+		this.singleCommand = singleCommand;
+	}
+	public String getDtuNo() {
+		return dtuNo;
+	}
+	public void setDtuNo(String dtuNo) {
+		this.dtuNo = dtuNo;
+	}
+	public String getCommand() {
+		return command;
+	}
+	public void setCommand(String command) {
+		this.command = command;
+	}
+	public String getParams() {
+		return params;
+	}
+	public void setParams(String params) {
+		this.params = params;
+	}
+	
+}

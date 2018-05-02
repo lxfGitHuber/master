@@ -1,0 +1,19 @@
+package com.service.heartcalculate;
+
+import com.service.bean.GpsType;
+import com.service.bean.Packet;
+import com.service.bean.Person;
+import com.service.bean.PersonSignal;
+
+/**
+ * Created by TaoMac on 2017/9/5.
+ */
+public class CalculateFactory {
+
+    public static BasicsCalculate getPersonSignal(PersonSignal signal,Person person,Packet packet){
+        if(packet.getGpsType().equals(GpsType.CHUN_HUI)){
+        	return new CHCalculate(signal,person,packet);
+        }
+        return null;
+    }
+}

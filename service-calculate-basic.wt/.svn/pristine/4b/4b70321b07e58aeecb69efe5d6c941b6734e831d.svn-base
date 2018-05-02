@@ -1,0 +1,91 @@
+package com.service.bean;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 工作区域(路线)
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class Area {
+	/**
+	 * 区域id 
+	 */
+	private String areaId;
+	/**
+	 * 区域名称
+	 */
+	private String name;
+	/**
+	 * 区域类别
+	 * 1:多边形
+	 * 2:线型
+	 */
+	private int type;
+	
+	/**
+	 * 区域工作分类
+	 */
+	private String kind;
+	/**
+	 * 路宽
+	 */
+	private int lineWidth;
+	/**
+	 * 坐标点 (构成多边形/线型的转角点)
+	 */
+	private List<Point> points = new ArrayList<Point>();
+	/**
+	 * 路段监测点集合</br>
+	 * Key: RoadId</br>Value: RoadCheckPoint集合
+	 */
+	private Map<String, List<RoadCheckPoint>> checkPointsMap = new HashMap<String, List<RoadCheckPoint>>();
+	
+	
+	public String getAreaId() {
+		return areaId;
+	}
+	public void setAreaId(String areaId) {
+		this.areaId = areaId;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public int getType() {
+		return type;
+	}
+	public void setType(int type) {
+		this.type = type;
+	}
+	public String getKind() {
+		return kind;
+	}
+	public void setKind(String kind) {
+		this.kind = kind;
+	}
+	public int getLineWidth() {
+		return lineWidth;
+	}
+	public void setLineWidth(int lineWidth) {
+		this.lineWidth = lineWidth;
+	}
+	public List<Point> getPoints() {
+		return points;
+	}
+	public void setPoints(List<Point> points) {
+		this.points = points;
+	}
+	public Map<String, List<RoadCheckPoint>> getCheckPointsMap() {
+		return checkPointsMap;
+	}
+	public void setCheckPointsMap(Map<String, List<RoadCheckPoint>> checkPointsMap) {
+		this.checkPointsMap = checkPointsMap;
+	}
+
+}

@@ -1,0 +1,162 @@
+package com.service.bean;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.data.annotation.Id;
+
+
+public class VehicleSignal implements Serializable{
+	
+	private static final long serialVersionUID = 1L;
+	@Id
+	private String id;
+	private String signalId;
+	private String vehicleId;
+	private String dtuNo;
+	private Date gpsTime;
+	private double lat;
+	private double lng;
+	private double speed;
+	private double curMile;
+	private double direction;
+	private int accStatus;
+	private int workStatus;
+	private int dataType;
+	private List<Info> baseInfo;
+	private List<Info> dtuInfo;
+	private List<Info> workingInfo;
+	private List<Info> sensorInfo;
+	private List<Info> alarmInfo;
+	private String oilDec;
+	private String oilInt;
+	
+	public double getCurMile() {
+		return curMile;
+	}
+	public void setCurMile(double curMile) {
+		this.curMile = curMile;
+	}
+	public String getSignalId() {
+		return signalId;
+	}
+	public void setSignalId(String signalId) {
+		this.signalId = signalId;
+	}
+	
+	public int getDataType() {
+		return dataType;
+	}
+	public void setDataType(int dataType) {
+		this.dataType = dataType;
+	}
+	public String getVehicleId() {
+		return vehicleId;
+	}
+	public void setVehicleId(String vehicleId) {
+		this.vehicleId = vehicleId;
+	}
+	public String getDtuNo() {
+		return dtuNo;
+	}
+	public void setDtuNo(String dtuNo) {
+		this.dtuNo = dtuNo;
+	}
+	public Date getGpsTime() {
+		return gpsTime;
+	}
+	public void setGpsTime(Date gpsTime) {
+		this.gpsTime = gpsTime;
+	}
+	public double getLat() {
+		return lat;
+	}
+	public void setLat(double lat) {
+		this.lat = lat;
+	}
+	public double getLng() {
+		return lng;
+	}
+	public void setLng(double lng) {
+		this.lng = lng;
+	}
+	public double getSpeed() {
+		return speed;
+	}
+	public void setSpeed(double speed) {
+		this.speed = speed;
+	}
+	public double getDirection() {
+		return direction;
+	}
+	public void setDirection(double direction) {
+		this.direction = direction;
+	}
+	public int getAccStatus() {
+		return accStatus;
+	}
+	public void setAccStatus(int accStatus) {
+		this.accStatus = accStatus;
+	}
+	public int getWorkStatus() {
+		return workStatus;
+	}
+	public void setWorkStatus(int workStatus) {
+		this.workStatus = workStatus;
+	}
+	public List<Info> getBaseInfo() {
+		return baseInfo;
+	}
+	public void setBaseInfo(List<Info> baseInfo) {
+		this.baseInfo = baseInfo;
+	}
+	public List<Info> getDtuInfo() {
+		return dtuInfo;
+	}
+	public void setDtuInfo(List<Info> dtuInfo) {
+		this.dtuInfo = dtuInfo;
+	}
+	public List<Info> getWorkingInfo() {
+		return workingInfo;
+	}
+	public void setWorkingInfo(List<Info> workingInfo) {
+		this.workingInfo = workingInfo;
+	}
+	public List<Info> getSensorInfo() {
+		return sensorInfo;
+	}
+	public void setSensorInfo(Info sensorInfo) {
+		if(null==this.sensorInfo){
+			this.sensorInfo = new ArrayList<Info>();
+		}
+		this.sensorInfo.add(sensorInfo);
+	}
+	public List<Info> getAlarmInfo() {
+		return alarmInfo;
+	}
+	public void setAlarmInfo(List<Info> alarmInfo) {
+		this.alarmInfo = alarmInfo;
+	}
+	public String getOilDec() {
+		return oilDec;
+	}
+	public void setOilDec(String oilDec) {
+		this.oilDec = oilDec;
+	}
+	public String getOilInt() {
+		return oilInt;
+	}
+	public void setOilInt(String oilInt) {
+		this.oilInt = oilInt;
+	}
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	
+}

@@ -1,0 +1,101 @@
+package com.service.calculate;
+
+import java.text.DecimalFormat;
+
+import com.service.bean.Info;
+import com.service.bean.OilBox;
+import com.service.bean.Point;
+import com.service.bean.VehiclePacket;
+import com.service.bean.VehicleSignal;
+import com.service.dao.RedisDaoImpl;
+import com.service.tools.Coordinate;
+
+public class VehicleCalculate {
+	
+	public VehicleSignal signal;
+	
+	public VehiclePacket packet;
+	
+	public VehicleCalculate(VehicleSignal signal,VehiclePacket packet){
+		this.signal = signal;
+		this.packet = packet;
+	}
+	public VehicleSignal execute(RedisDaoImpl redisDaoImpl){
+		setDataByPacket();
+		//dtu状态
+		setOilAmt(redisDaoImpl);
+		setLatLng();
+//		setDtuInfo();
+//		//开关量状态
+//		setWorkingInfo();
+//		//故障状态
+//		setAlarmInfo();
+//		//输出状态
+//		setRawOutput();
+		return signal;
+	}
+	
+	
+	private void setLatLng() {
+		if(packet.getLat()>0.00&&packet.getLng()>0.00){
+			Point p = new Point(packet.getLat(),packet.getLng());
+			p = Coordinate.gpsToWgs84(p);
+			p = Coordinate.wgs84ToBd09(p);
+			signal.setLat(p.getLat());
+			signal.setLng(p.getLng());
+		}else{
+			signal.setLat(packet.getLat());
+			signal.setLng(packet.getLng());
+		}
+	}
+	private void setDataByPacket() {
+		signal.setVehicleId(packet.getVehicleId());
+		signal.setDtuNo(packet.getDtuNo());
+		signal.setGpsTime(packet.getGpsTime());
+		signal.setSpeed(packet.getSpeed());
+		signal.setDirection(packet.getDirection());
+		signal.setAccStatus(packet.getAccStatus());
+		signal.setWorkStatus(packet.getWorkStatus());
+		signal.setBaseInfo(packet.getBaseInfo());
+		signal.setDtuInfo(packet.getDtuInfo());
+		signal.setOilDec(packet.getOilDec());
+		signal.setOilInt(packet.getOilInt());
+		signal.setWorkingInfo(packet.getWorkingInfo());
+		signal.setAlarmInfo(packet.getAlarmInfo());
+		if(null!=packet.getBaseInfo()){
+			for (Info basinfo : packet.getBaseInfo()) {
+				
+				if(basinfo.getName().equals("CurMile")){
+					signal.setCurMile(Double.parseDouble(basinfo.getValue()));
+				}
+			}
+		}
+		if(null!=packet.getDtuInfo()){
+			for (Info basinfo : packet.getDtuInfo()) {
+				if(basinfo.getName().equals("DataType")){
+					signal.setDataType(Integer.parseInt(basinfo.getValue()));
+				}
+			}
+		}
+	}
+	private void setOilAmt(RedisDaoImpl redisDaoImpl) {
+		if(null!=packet.getOilDec()&&null!=packet.getOilInt()){
+			if(!(0.00==Integer.parseInt(packet.getOilDec())&&0.00==Integer.parseInt(packet.getOilInt()))){
+				OilBox oilbox = redisDaoImpl.getOilBox(packet.getDtuNo());
+				double oilAmt = 0.00;
+				if(null!=oilbox){
+					oilAmt = oilbox.getOilAmt(Integer.parseInt(packet.getOilInt())+Integer.parseInt(packet.getOilDec())/ 100.00);
+					DecimalFormat fnum = new DecimalFormat("##0.00");
+					Info info = new Info();
+					info.setName("OilAmt");
+					info.setValue(fnum.format(oilAmt));
+					info.setDescName("油量");
+					info.setDescValue(fnum.format(oilAmt));
+					signal.setSensorInfo(info);
+				}	
+			}
+		}
+		
+	}
+	
+}

@@ -1,0 +1,85 @@
+package com.service.cache;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.ehcache.Cache;
+import org.ehcache.CacheManager;
+import org.ehcache.config.builders.CacheConfigurationBuilder;
+import org.ehcache.config.builders.CacheManagerBuilder;
+import org.ehcache.config.builders.ResourcePoolsBuilder;
+import org.springframework.stereotype.Component;
+
+import com.service.bean.OilBox;
+import com.service.bean.Person;
+import com.service.bean.PersonSignal;
+import com.service.bean.VehicleSignal;
+
+/**
+ * Created by TaoMac on 2017/7/18.
+ */
+import io.netty.channel.Channel;
+
+/**
+ * Created by TaoMac on 2017/7/18.
+ */
+@Component
+public class CacheCenter {
+
+	public CacheManager cacheManager;
+    public Cache<String , Channel> dtuCache;
+    public Cache<String , String> lastModelCache;
+    public Cache<String , ConcurrentLinkedQueue> gpsSaveQueue;
+    public Cache<String ,OilBox> oilBoxMap;
+    public Cache<String, Person> personCache;
+    public Cache<String ,VehicleSignal> vehicleMap;
+    public AtomicLong personCount = new AtomicLong(0);
+    public AtomicLong vehicleCount = new AtomicLong(0);
+    public Cache<String , ConcurrentLinkedQueue> addPointQueue;
+    public Cache<String ,PersonSignal> personMap;
+    
+    public CacheCenter() {
+        init();
+    }
+
+    public void init() {
+        cacheManager = CacheManagerBuilder.newCacheManagerBuilder()
+            .withCache("preConfigured",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(Long.class, String.class,
+                    ResourcePoolsBuilder.heap(100))
+                    .build())
+            .build(true);
+
+        dtuCache = cacheManager.createCache("dtuCache",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Channel.class,
+                        ResourcePoolsBuilder.heap(100)).build());
+        
+        lastModelCache = cacheManager.createCache("lastModelCache",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, String.class,
+                        ResourcePoolsBuilder.heap(100)).build());
+        
+        gpsSaveQueue = cacheManager.createCache("gpsSaveQueue",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, ConcurrentLinkedQueue.class,
+                        ResourcePoolsBuilder.heap(100)).build());
+        gpsSaveQueue.put("signal", new ConcurrentLinkedQueue());
+        
+        oilBoxMap = cacheManager.createCache("oilBoxMap",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, OilBox.class,
+                        ResourcePoolsBuilder.heap(100)).build());
+        vehicleMap = cacheManager.createCache("vehicleMap",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, VehicleSignal.class,
+                        ResourcePoolsBuilder.heap(100)).build());
+        personCache = cacheManager.createCache("personCache",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, Person.class,
+                        ResourcePoolsBuilder.heap(100)).build());
+
+        addPointQueue = cacheManager.createCache("addPointQueue",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, ConcurrentLinkedQueue.class,
+                        ResourcePoolsBuilder.heap(100)).build());
+        
+        personMap = cacheManager.createCache("personMap",
+                CacheConfigurationBuilder.newCacheConfigurationBuilder(String.class, PersonSignal.class,
+                        ResourcePoolsBuilder.heap(100)).build());
+    }
+    
+}

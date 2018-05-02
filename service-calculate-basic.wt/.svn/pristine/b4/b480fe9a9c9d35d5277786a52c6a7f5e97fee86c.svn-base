@@ -1,0 +1,146 @@
+package com.service.dao;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.service.bean.ChunHuiPacket;
+import com.service.bean.GpsType;
+import com.service.bean.OrderMessage;
+import com.service.bean.Packet;
+import com.service.webservice.out.NoticeMessageResult;
+import com.service.webservice.out.WebServiceServerNoticeMessageImplService;
+@Service
+public class ProFrontSendMessage {
+	
+	@Autowired
+	DbOther dbOther;
+
+	@Autowired
+	WebServiceServerNoticeMessageImplService stub;
+	
+	private static String REGX = "(?<dtuType>\\d{1})\\:(?<version>\\d{1})\\:(?<secretType>\\d{1})\\:(?<singleCommand>\\d{2,8})"
+			+ "\\:(?<dtuNo>\\d{2,20})\\:(?<command>\\w{2,3})(?<params>.*)";
+	
+	
+	public void sendMessages(String sign){
+	//DbOther dbOther = new DbOther();
+	//Map<String, OrderMessage> map = dbOther.getOrderMessages(sign);
+	List<OrderMessage> successOrder = new ArrayList<OrderMessage>();
+	Map<String, OrderMessage> map=dbOther.getOrderMessages(sign);
+	
+     if(map != null &&  !map.isEmpty()){
+    	 for(OrderMessage orderMessage : map.values()){
+
+				if(orderMessage.TypeNo.equals("S83")&&orderMessage.DownContent.contains(",")){
+					boolean b1 = false;
+					boolean b2 = false;
+					String[] sendorder = orderMessage.DownContent.split(",");
+					for(int i = 0; i < sendorder.length; i++){
+						orderMessage.DownContent = sendorder[i];
+						int relsult = sendMs(orderMessage);
+						if(relsult != 0){
+							break;
+						}
+						if(relsult == 0 && i == 0){
+							b1 = true;
+						}
+						if(relsult == 0 && i == 1){
+							b2 = true;
+						}
+					}
+					if(b1 && b2){
+						successOrder.add(orderMessage);
+					}
+					
+				}else{
+					int relsult = sendMs(orderMessage);
+					if(relsult == 0){
+						successOrder.add(orderMessage);
+					}
+				}
+    	 }
+    	 if(!successOrder.isEmpty()){
+    		 dbOther.changeHandle(successOrder);
+			}
+	}
+	}
+	
+	
+	private   ChunHuiPacket analysis(String sms) {
+		ChunHuiPacket packet = null;
+		Pattern p = Pattern.compile(REGX);
+		Matcher m = p.matcher(sms);
+		if (m.find()) {
+			packet = new ChunHuiPacket();
+			Field[] field = packet.getClass().getFields();
+			for(Field f : field){
+				try {
+					f.setAccessible(true);
+					f.set(packet, m.group(f.getName()));
+				} catch (Exception e) {
+					
+				}
+			}
+		}
+		return packet;
+	}
+	
+	
+	
+ 	private int sendMs(OrderMessage orderMessage){
+
+		ChunHuiPacket fp = analysis(orderMessage.DownContent);
+		Packet packet = new Packet();
+		packet.setGpsType(GpsType.FRONT_PAGE);
+		packet.setDtuNo(fp.getDtuNo());
+		packet.setCmdType(fp.getCommand());
+		packet.setIsValid(1);
+		//数据区即是参数区
+		packet.setDataArea(fp.getParams());  //模式 1
+		
+		//String version = fp.version;
+		String[] content = orderMessage.DownContent.split(":");
+		String sencontent = "";
+		for(int i = 0; i < content.length; i++){
+			if(i == 4){
+				sencontent += ":39238239329";
+			}else if(i == 0){
+				sencontent += content[i];
+			}else{
+				sencontent += ":" + content[i];
+			}
+		}
+		NoticeMessageResult noticeMessageResult = stub.getWebServiceServerNoticeMessageImplPort().sendSMS(orderMessage.SIMCard, sencontent);
+		System.out.println(noticeMessageResult.getCode());
+		/*if(noticeMessageResult.getCode() == 0){
+			if (!CacheManager.instance().scalarMap.containsKey(packet.gpsNo)) {
+				CacheManager.instance().scalarMap.put(packet.gpsNo, new PersonScalar());
+			}
+			if(GpsType.FRONT_PAGE.equals(packet.gpsType) && packet.cmdType.equals(CmdType.CH_S84)){
+				savePersonOnOffTime(packet);
+			}else if((GpsType.FRONT_PAGE.equals(packet.gpsType) && packet.cmdType.equals(CmdType.CH_S83))||(GpsType.FRONT_PAGE.equals(packet.gpsType) && packet.cmdType.equals(CmdType.CH_S80))){
+				CacheManager.instance().getPacketQueue(packet.gpsNo).offer(packet);
+				ProcessPool.threadController(packet.gpsNo);
+			}
+		}*/
+		
+		return noticeMessageResult.getCode();
+		
+	}
+ 	
+ 	/*public static void main(String[] args) {
+ 		WebServiceServerNoticeMessageImplService stubt =  new WebServiceServerNoticeMessageImplService();
+ 	  	NoticeMessageResult noticeMessageResult = stubt.getWebServiceServerNoticeMessageImplPort().sendSMS("18720984243", "12345");
+ 		//NoticeMessageResult noticeMessageResult = ToolsUtil.sendSMS("18720984243", "12345");
+ 		System.out.println("发送短信回复的code"+noticeMessageResult.getCode());
+	}*/
+ 	
+ 	
+}

@@ -1,0 +1,166 @@
+package com.service.bean;
+
+import com.service.tools.DateFormat;
+
+import java.util.Date;
+
+/**
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class PersonSignalPath implements Cloneable {
+	private String signalId;	
+	private String dtuNo;
+	private Date gpsTime;
+	private double baiduLng;	
+	private double baiduLat;
+	private String companyCode;
+	private String equipmentId;
+	private int sequence;
+	private int accStatus;
+	/** 车辆行驶速度 */
+	private int speed;
+	/** 总里程数 */
+	private double totalMile;
+	private int isInWork;
+	private int hasAlarm;
+	private double todayMile;
+	
+	@Override  
+    public Object clone()
+    {  
+		try{
+			return super.clone();  
+		}catch(Exception e){
+			return null;
+		}
+    }
+	
+	public String getSignalId() {
+		return signalId;
+	}
+
+	public void setSignalId(String signalId) {
+		this.signalId = signalId;
+	}
+
+	public String getDtuNo() {
+		return dtuNo;
+	}
+
+	public void setDtuNo(String dtuNo) {
+		this.dtuNo = dtuNo;
+	}
+
+	public Date getGpsTime() {
+		return gpsTime;
+	}
+
+	public void setGpsTime(Date gpsTime) {
+		this.gpsTime = gpsTime;
+	}
+
+	public double getBaiduLng() {
+		return baiduLng;
+	}
+
+	public void setBaiduLng(double baiduLng) {
+		this.baiduLng = baiduLng;
+	}
+
+	public double getBaiduLat() {
+		return baiduLat;
+	}
+
+	public void setBaiduLat(double baiduLat) {
+		this.baiduLat = baiduLat;
+	}
+
+	public String getCompanyCode() {
+		return companyCode;
+	}
+
+	public void setCompanyCode(String companyCode) {
+		this.companyCode = companyCode;
+	}
+
+	public String getEquipmentId() {
+		return equipmentId;
+	}
+
+	public void setEquipmentId(String equipmentId) {
+		this.equipmentId = equipmentId;
+	}
+
+	public int getSequence() {
+		return sequence;
+	}
+
+	public void setSequence(int sequence) {
+		this.sequence = sequence;
+	}
+
+	public int getAccStatus() {
+		return accStatus;
+	}
+
+	public void setAccStatus(int accStatus) {
+		this.accStatus = accStatus;
+	}
+
+	public int getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(int speed) {
+		this.speed = speed;
+	}
+
+	public double getTotalMile() {
+		return totalMile;
+	}
+
+	public void setTotalMile(double totalMile) {
+		this.totalMile = totalMile;
+	}
+
+	public int getIsInWork() {
+		return isInWork;
+	}
+
+	public void setIsInWork(int isInWork) {
+		this.isInWork = isInWork;
+	}
+
+	public int getHasAlarm() {
+		return hasAlarm;
+	}
+
+	public void setHasAlarm(int hasAlarm) {
+		this.hasAlarm = hasAlarm;
+	}
+
+	public double getTodayMile() {
+		return todayMile;
+	}
+
+	public void setTodayMile(double todayMile) {
+		this.todayMile = todayMile;
+	}
+
+	public Object[] getAll(){
+		Object[] array = new Object[14];
+		array[0] = "'"+this.signalId+"'";
+		array[1] = "'" + this.dtuNo + "'";
+		array[2] = "'" + DateFormat.format(this.gpsTime) + "'";
+		array[3] = String.valueOf(this.baiduLng);
+		array[4] = String.valueOf(this.baiduLat);
+		array[5] = "'" + this.companyCode + "'";
+		array[6] = this.sequence;
+		array[7] = "'" + this.accStatus + "'";
+		array[8] = String.valueOf(this.totalMile);
+		array[9] = this.isInWork;
+		array[10] = this.hasAlarm;
+		return array;
+	}
+}

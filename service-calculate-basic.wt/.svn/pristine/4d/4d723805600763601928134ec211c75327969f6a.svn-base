@@ -1,0 +1,55 @@
+package com.service.bean;
+
+import java.util.Date;
+
+/**
+ * Created by TaoMac on 2017/9/4.
+ */
+public class BasicInfo {
+    private String uuid;
+    private String dtuno;
+    private Date gpstime;
+    private String spacket;
+    private String target;
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getDtuno() {
+        return dtuno;
+    }
+
+    public void setDtuno(String dtuno) {
+        this.dtuno = dtuno;
+    }
+
+    public Date getGpstime() {
+        return gpstime;
+    }
+
+    public void setGpstime(Date gpstime) {
+        this.gpstime = gpstime;
+    }
+
+	public String getSpacket() {
+		return spacket;
+	}
+
+	public void setSpacket(String spacket) {
+		this.spacket = spacket;
+	}
+
+
+	public String getTarget() {
+		return target;
+	}
+
+	public void setTarget(String target) {
+		this.target = target;
+	}
+    
+}

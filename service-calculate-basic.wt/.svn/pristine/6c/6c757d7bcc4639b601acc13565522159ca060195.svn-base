@@ -1,0 +1,209 @@
+package com.service.heartcalculate;
+
+import java.text.DecimalFormat;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.service.bean.Area;
+import com.service.bean.DutyDetail;
+import com.service.bean.GpsType;
+import com.service.bean.Packet;
+import com.service.bean.Person;
+import com.service.bean.PersonSignal;
+import com.service.bean.Point;
+import com.service.cache.DbSignal;
+import com.service.dao.MongodbDaoImpl;
+import com.service.tools.IDCreator;
+import com.service.tools.Tools;
+
+/**
+ * 基础值计算
+ * 
+ * @author lj
+ *
+ */
+public class BasicsCalculate {
+	
+	@Autowired
+    MongodbDaoImpl mongodb;
+	
+	@Autowired
+    DbSignal dbSignal;
+	
+	private DecimalFormat df = new DecimalFormat("#.00");
+	
+	public PersonSignal signal;
+	
+	public Person person;
+
+	public Packet packet;
+
+	public BasicsCalculate(PersonSignal signal, Person person, Packet packet) {
+		this.signal = signal;
+		this.person = person;
+		this.packet = packet;
+	}
+
+	public PersonSignal execute(){
+		if(null != person.getLastGps()){
+			// 解析心跳命令
+			signal = person.getLastGps();
+			signal.setGpsTime(packet.getGpsTime());
+			signal.baiduLocation = IDCreator.getSignalId();
+			signal.setSpeed(Double.parseDouble(df.format(0.0)));
+			signal.setCmdType(packet.getCmdType());
+			calculateIsInWork();
+			signal.setIsInArea(signal.getIsInWork());
+			calculateSetAreaIds();
+			calculateMile();
+			
+			if(person.getLastGps() != null && !Tools.isSameDay(signal.getGpsTime(), person.getLastGps().getGpsTime())){
+				signal.setStopTime(0);
+			}
+		}else{
+			return null;
+		}
+		return signal;
+	
+	}
+
+	/**
+	 * 判断人员是否在工作状态</br>
+	 * 0:非工作</br>
+	 * 1:工作</br>
+	 * 浮动时间内都算工作时间
+	 * 
+	 * @return
+	 */
+	public void calculateIsInWork() {
+		if (0 == person.getDetails().size()) {
+			// 该人员当天无排班计划或没有工作区域
+			signal.setIsInWork(0);
+		}
+		if (null != signal.getAreaIds() && 0 != signal.getAreaIds().size()) {
+			// 在工作区域内
+			if (null != isWorkTime()) {
+				// 排班中设置了工作区域，按排班工作区域判断
+				for(DutyDetail detail:person.getDetails()){
+					if (signal.getAreaIds().contains(detail.getAreaId())) {
+						signal.setIsInWork(1);
+					}
+				}
+			} else {
+				// 非工作时间
+				signal.setIsInWork(0);
+			}
+		} else {
+			// 不在工作区域内
+			signal.setIsInWork(0);
+		}
+	}
+	
+	/**
+	 * 判断当前时间是否是工作时间</br>
+	 * 该方法会判断上下班的浮动时间，不对外</br>
+	 * 例: 工作时间07:00 ~ 08:00 浮动时间5分钟，则在06:55 ~ 08:05这个时间段内都是工作时间
+	 * 
+	 * @return DutyDetail:是工作时间</br>null:不是工作时间
+	 */
+	public DutyDetail isWorkTime() {
+		for(DutyDetail detail:person.getDetails()){
+			if (signal.getGpsTime().after(detail.getWorkStartTime1())
+					&& signal.getGpsTime().before(detail.getWorkEndTime2())) {
+				return detail;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 根据人员和Gps数据，获取该人员所处的区域Id(有可能在区域交集处，所以返回是一个集合)
+	 * @return
+	 */
+	public void calculateSetAreaIds() {
+		Point p = new Point(signal.getBaiduLat(), signal.getBaiduLng());
+		// 优先判断排班计划中绑定的区域
+		Area area = null;
+		for (DutyDetail detail : person.getDetails()) {
+			area = person.getAreaMap().get(detail.getAreaId());
+			if (null!=area && Tools.isInArea(p, area) & !signal.getAreaIds().contains(detail.getAreaId())) {
+				signal.getAreaIds().add(detail.getAreaId());
+			}
+		}
+	}
+
+
+	/**
+	 * 数据库未添加TodayMile TotalMile字段前先使用该方法
+	 */
+	public void calculateMile() {
+		double distance = 0.0D;
+		if (null != person && null != person.getLastGps()) {
+			distance = Tools.getTwoPointDistance(
+					person.getLastGps().getBaiduLng(), person.getLastGps().getBaiduLat(), signal.getBaiduLng(), signal.getBaiduLat());
+			if(GpsType.CHUN_HUI.equals(packet.getGpsType())){
+				long time = (signal.getGpsTime().getTime() - person.getLastGps().getGpsTime().getTime()) / 1000;
+				if(time > 0){
+					signal.setSpeed(Double.parseDouble(df.format(distance / time)));
+				}
+			}
+			if (!Tools.isSameDay(signal.getGpsTime(), person.getLastGps().getGpsTime())) {
+				signal.setTodayMile(Double.parseDouble(df.format(0)));
+			}
+//			distance += person.lastGps.curMile;
+		}
+//		signal.curMile = distance;
+	}
+	
+	//电量
+  	protected void calculatePower() {
+  		String[] ary = packet.getDataArea().split("\\,");
+  		String temp = ary[0].substring(1,ary[0].length());
+  	    int power= Integer.valueOf(temp).intValue();
+  		signal.setWatchPower(power);
+  		//int heartRate = Integer.valueOf(packet2.dataArea);
+  		if(power <= 20){
+  			signal.setLowPower(1);
+  		}else{
+  			signal.setLowPower(0);
+  		}
+  	}
+  	
+	//心率
+  	protected void calculateHeartRate() {
+		String[] ary = packet.getDataArea().split("\\,");
+		String temp = ary[1];
+		String[] ary2 = temp.split("\\|");
+		int a =0;
+		//int i=(int)(ary2.length*Math.random());
+		for(int i=0;i<ary2.length-1;i++){
+			if(ary2[a].equals("0")){
+				a++;
+				System.out.println(a);
+			}else{
+				break;
+			}
+		}
+		System.out.println(a);
+		signal.setHeartRate(Integer.valueOf(ary2[a]));
+	}
+  		
+  	protected void setFrequency(){
+		if(!(dbSignal.getModel(packet.getDtuNo())==null)){
+    		String workfrequency = "0";
+    		workfrequency=dbSignal.getModel(packet.getDtuNo());
+    		if(workfrequency.equals("0")){
+				signal.setCurentModel(1);
+				signal.setTransmitFrequency(1800);//待机模式30分钟转换为秒
+			}else{
+				signal.setCurentModel(0);
+				String msg  = workfrequency;
+				String[] pinlv =  msg.split(":");
+				String[] last = pinlv[6].split("}");
+				String aa = last[0];
+				System.out.println(aa);
+				signal.setTransmitFrequency(Integer.valueOf(aa));
+			}
+    	}
+	}
+}

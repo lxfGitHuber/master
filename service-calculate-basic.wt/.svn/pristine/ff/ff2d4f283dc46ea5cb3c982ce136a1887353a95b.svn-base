@@ -1,0 +1,11 @@
+package com.service.bean;
+
+public class Standard implements Comparable<Standard>  {
+	public double oilPercent;
+	public double oilHeight;
+	public double oilValue;
+	@Override
+	public int compareTo(Standard arg0) {
+		return oilPercent>arg0.oilPercent?1:-1;
+	}
+}

@@ -1,0 +1,44 @@
+package com.service.bean;
+
+/**
+ * Gps型号
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class GpsType {
+	/**
+	 * HB型号Gps
+	 */
+	public static final String HB_GPS = "HB_GPS";
+	/**
+	 * 前端页面
+	 */
+	public static final String FRONT_PAGE = "Front_Page";
+	/**
+	 * GT03B型号Gps
+	 */
+	public static final String GT03B_GPS = "GT03B_GPS";
+	/**
+	 * 手表Gps，型号暂未知
+	 */
+	public static final String WATCH_GPS = "WATCH_GPS";
+	/**
+	 * 手表GPS，型号 城市漫步 守护星009
+	 */
+	public static final String CITY009_GPS = "CITY009_GPS";
+	/**
+	 * 手表三基同创协议 3G包头
+	 */
+	public static final String WATCH_S3G = "WATCH_S3G";
+	
+	/**
+	 * 春晖手表协议
+	 */
+	public static final String CHUN_HUI = "LCH-B";
+	
+	/**
+	 * 春晖手表协议
+	 */
+	public static final String TEL = "tel";
+	
+}

@@ -1,0 +1,34 @@
+package com.service.calculate;
+
+import com.service.bean.GpsType;
+import com.service.bean.Packet;
+import com.service.bean.Person;
+import com.service.bean.PersonSignal;
+import com.service.bean.VehiclePacket;
+import com.service.bean.VehicleSignal;
+
+/**
+ * Created by TaoMac on 2017/9/5.
+ */
+public class CalculateFactory {
+
+    public static BasicsCalculate getPersonSignal(PersonSignal signal,Person person,Packet packet){
+        if (packet.getGpsType().equals(GpsType.WATCH_S3G)) {
+            return new S3gCalculate(signal,person,packet);
+        }
+        if(packet.getGpsType().equals(GpsType.CHUN_HUI)){
+        	return new CHCalculate(signal,person,packet);
+        }
+        if(packet.getGpsType().equals(GpsType.GT03B_GPS)){
+        	return new GT03BCalculate(signal,person,packet);
+        }
+        if(packet.getGpsType().equals(GpsType.TEL)){
+        	return new TelCalculate(signal,person,packet);
+        }
+        return null;
+    }
+    
+    public static VehicleCalculate getVehicleSignal(VehicleSignal signal,VehiclePacket packet){
+    	return new FFCalculate(signal,packet);
+    }
+}

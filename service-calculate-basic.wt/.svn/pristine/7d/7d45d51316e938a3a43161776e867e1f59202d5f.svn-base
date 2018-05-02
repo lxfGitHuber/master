@@ -1,0 +1,190 @@
+package com.service.dao;
+
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Component;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.service.bean.Area;
+import com.service.bean.DutyDetail;
+import com.service.bean.OilBox;
+import com.service.bean.Person;
+import com.service.bean.PersonAlarmRule;
+import com.service.bean.PersonSignal;
+import com.service.bean.VehicleSignal;
+import com.service.cache.CacheCenter;
+
+import redis.clients.jedis.Jedis;
+
+/**
+ * Created by TaoMac on 2017/9/4.
+ */
+@Component
+public class RedisDaoImpl {
+    private final Logger logger = Logger.getLogger(this.getClass());
+
+//    @Autowired
+//	RedisUtil redisUtil;
+    
+    @Autowired
+	StringRedisTemplate redisTemplate;
+    
+    @Autowired
+    MongodbDaoImpl mongodb;
+    
+    @Autowired
+	CacheCenter cacheCenter;
+    /**
+     * 根据dtuNo查找人员
+     * @param dtuNo
+     * @return
+     */
+    public Person getPerson(String dtuNo,String date) {
+        Person person = null;
+        String json = null;
+        if(null!=cacheCenter.personCache.get(dtuNo)){
+        	person = cacheCenter.personCache.get(dtuNo);
+        	person.setDetails(getDuty(dtuNo,date));
+        }else{
+	        try {
+	            json = redisTemplate.opsForValue().get("cache.person." + dtuNo);
+	            if (json != null) {
+	                person = JSON.parseObject(json, new TypeReference<Person>(){});
+	                person.setAreaMap(getAreaMap(dtuNo));
+	                person.setRules(getAlarmRule(dtuNo));
+	                person.setDetails(getDuty(dtuNo,date));
+	                cacheCenter.personCache.put(dtuNo, person);
+	            }
+	        } catch (Exception e) {
+	            logger.error(e);
+	        }
+        }
+        return person;
+    }
+
+    /**
+     * 获取该人员所对应的工作区域(工作路段)
+     * @param dtuNo
+     * @return
+     */
+    public Map<String, Area> getAreaMap(String dtuNo) {
+        Map<String, Area> map = new HashMap<String, Area>();
+        String json = null;
+        try {
+            json = redisTemplate.opsForValue().get("cache.person.areaMap." + dtuNo);
+            if (json != null) {
+                map = JSON.parseObject(json, new TypeReference<Map<String, Area>>() {});
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        return map;
+    }
+    
+    /**
+	 * 根据人员Id获取报警规则
+	 * @param personId
+	 * @return
+	 */
+	private Map<String, PersonAlarmRule> getAlarmRule(String dtuNo) {
+		Map<String, PersonAlarmRule> map = new HashMap<String, PersonAlarmRule>();
+		String json = null;
+		try {
+			json = redisTemplate.opsForValue().get("cache.person.alarmRuleMap."+dtuNo);
+			if(json != null){
+				map = JSON.parseObject(json, new TypeReference<Map<String, PersonAlarmRule>>(){});
+			}
+		} catch (Exception e) {
+			logger.error(e);
+		}
+		return map;
+	}
+    
+    /**
+     * 获取人员当天排班
+     * @param dtuNo
+     * @return
+     */
+    public List<DutyDetail> getDuty(String dtuNo,String date) {
+        List<DutyDetail> details = new ArrayList<DutyDetail>();
+        String json = null;
+        try{
+            json = redisTemplate.opsForValue().get("cache.person.duty."+dtuNo+"."+date);
+            if(json != null){
+                details = JSON.parseObject(json, new TypeReference<List<DutyDetail>>(){});
+            }
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        return details;
+    }
+    
+    /**
+	 * 根据simno获取最新一条模式
+	 */
+	public String getModel(String gpsNo){
+		if(null!=cacheCenter.lastModelCache.get(gpsNo)){
+			return cacheCenter.lastModelCache.get(gpsNo);
+		}
+		return null;
+	}
+	
+	public OilBox getOilBox(String dtuNo){
+		if(cacheCenter.oilBoxMap.containsKey(dtuNo)){
+			return cacheCenter.oilBoxMap.get(dtuNo);
+		}
+		OilBox oilBox = null;
+		try{
+			String json = redisTemplate.opsForValue().get("cache.oilbox.".concat(dtuNo));
+			oilBox = JSON.parseObject(json, new TypeReference<OilBox>() {});
+			if(null==oilBox){
+				throw new Exception();
+			}
+		}catch(Exception e){
+//			logger.error("cache.oilbox is null",e);
+		}
+		if(null!=oilBox){
+			cacheCenter.oilBoxMap.put(dtuNo, oilBox);
+		}
+		return oilBox;
+	}
+	
+	public Long geoADD(String key, String longitude, String latitude, String dName) {
+		RedisCallback<Long> pipelineCallback = new RedisCallback<Long>() {
+			@Override
+			public Long doInRedis(RedisConnection connection) throws DataAccessException {
+				Jedis jedis = (Jedis) connection.getNativeConnection();
+				return (Long) jedis.eval("return redis.call('GEOADD',KEYS[1],KEYS[2],KEYS[3],KEYS[4])", 4, key,
+						longitude, latitude, dName);
+			}
+		};
+
+		return redisTemplate.execute(pipelineCallback);
+	}
+	
+	public VehicleSignal getLastSignal(String dtuNo){
+		return cacheCenter.vehicleMap.get(dtuNo);
+	}
+	public void update(String dtuNo,VehicleSignal lastSignal,VehicleSignal signal){
+		cacheCenter.vehicleMap.put(dtuNo, signal);
+	}
+	
+	public PersonSignal getPersonLastSignal(String dtuNo){
+		return cacheCenter.personMap.get(dtuNo);
+	}
+	public void updatePerson(String dtuNo,PersonSignal lastSignal,PersonSignal signal){
+		cacheCenter.personMap.put(dtuNo, signal);
+	}
+    
+}

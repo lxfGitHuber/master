@@ -1,0 +1,62 @@
+package com.service.bean;
+
+import java.lang.reflect.Method;
+
+/**
+ * 人员报警规则
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class PersonAlarmRule {
+	/**
+	 * 人员Id
+	 */
+	public String personId;
+	/**
+	 * 规则类型
+	 */
+	public String ruleType;
+	/**
+	 * 报警级别
+	 */
+	public int alarmLevel;
+	/**
+	 * 持续时间
+	 */
+	public String duration;
+	/**
+	 * 持续时间1
+	 */
+	public String duration1;
+	/**
+	 * 持续时间2
+	 */
+	public String duration2;
+	/**
+	 * 规则Id
+	 */
+	public int ruleId;
+	/**
+	 * 报警名称
+	 */
+	public String ruleName;
+	
+	/**
+	 * 动态调用报警方法
+	 * @param person
+	 * @param signal
+	 * @throws Exception 
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void doAlarm(Person person, PersonSignal signal) {
+		try {
+			Class fileClass = Class.forName("com.service.alarm.AlarmFunction");
+			Method m = fileClass.getDeclaredMethod(
+					"alarm" + this.ruleType, person.getClass(), signal.getClass(), this.getClass());
+			m.invoke(fileClass.newInstance(), person, signal, this);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+}

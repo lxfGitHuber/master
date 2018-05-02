@@ -1,0 +1,21 @@
+package com.service.calculate;
+
+import com.service.bean.Packet;
+import com.service.bean.Person;
+import com.service.bean.PersonSignal;
+
+/**
+ * Created by TaoMac on 2017/9/5.
+ */
+public class TelCalculate extends BasicsCalculate {
+
+    public TelCalculate(PersonSignal signal, Person person, Packet packet) {
+        super(signal, person, packet);
+    }
+
+    @Override
+    public PersonSignal execute() {
+        super.execute();
+        return signal;
+    }
+}

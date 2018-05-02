@@ -1,0 +1,47 @@
+package com.service.bean;
+
+import java.util.Date;
+
+/**
+ * 排班明细
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class DutyDetail {
+	private Date workStartTime1;
+	private Date workEndTime1;
+	private Date workStartTime2;
+	private Date workEndTime2;
+	private String areaId;
+	public Date getWorkStartTime1() {
+		return workStartTime1;
+	}
+	public void setWorkStartTime1(Date workStartTime1) {
+		this.workStartTime1 = workStartTime1;
+	}
+	public Date getWorkEndTime1() {
+		return workEndTime1;
+	}
+	public void setWorkEndTime1(Date workEndTime1) {
+		this.workEndTime1 = workEndTime1;
+	}
+	public Date getWorkStartTime2() {
+		return workStartTime2;
+	}
+	public void setWorkStartTime2(Date workStartTime2) {
+		this.workStartTime2 = workStartTime2;
+	}
+	public Date getWorkEndTime2() {
+		return workEndTime2;
+	}
+	public void setWorkEndTime2(Date workEndTime2) {
+		this.workEndTime2 = workEndTime2;
+	}
+	public String getAreaId() {
+		return areaId;
+	}
+	public void setAreaId(String areaId) {
+		this.areaId = areaId;
+	}
+	
+}

@@ -1,0 +1,34 @@
+package com.service.webservice.out;
+
+import java.net.URL;
+
+import javax.xml.namespace.QName;
+import javax.xml.ws.Service;
+import javax.xml.ws.WebEndpoint;
+import javax.xml.ws.WebServiceFeature;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+@Component
+public class WebServiceServerNoticeMessageImplService{
+    
+	@Autowired
+	 URL url ;
+	
+	public final static QName SERVICE = new QName("http://out.webservice.service.com/", "WebServiceServer_NoticeMessageImplService");
+	public final static QName WebServiceServerNoticeMessageImplPort = new QName("http://out.webservice.service.com/", "WebServiceServer_NoticeMessageImplPort");
+    /**
+     * 
+     * @param features
+     *     A list of {@link javax.xml.ws.WebServiceFeature} to configure on the proxy.  Supported features not in the <code>features</code> parameter will have their default values.
+     * @return
+     *     returns WebServiceServerNoticeMessageImpl
+     */
+    @WebEndpoint(name = "WebServiceServer_NoticeMessageImplPort")
+    public WebServiceServerNoticeMessageImpl getWebServiceServerNoticeMessageImplPort(WebServiceFeature... features) {
+        Service service = Service.create(url,SERVICE);
+    	return service.getPort(WebServiceServerNoticeMessageImplPort, WebServiceServerNoticeMessageImpl.class, features);
+    }
+
+}

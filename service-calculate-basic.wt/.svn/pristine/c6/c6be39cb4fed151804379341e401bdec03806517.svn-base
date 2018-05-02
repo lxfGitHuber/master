@@ -1,0 +1,56 @@
+package com.service.tools;
+
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+
+public class DateFormat {
+
+	private static Map<String, SimpleDateFormat> formatMap = new HashMap<String, SimpleDateFormat>();
+
+	private static SimpleDateFormat getFormat(String pattern) {
+		if (!formatMap.containsKey(pattern)) {
+			formatMap.put(pattern, new SimpleDateFormat(pattern));
+		}
+		return formatMap.get(pattern);
+	}
+
+	/**
+	 * 日期格式化工具
+	 * 
+	 * @param date
+	 *            日期
+	 * @param pattern
+	 *            表现格式
+	 * @return
+	 */
+	public static String format(Date date, String ... pattern) {
+		if(date==null){
+			return null;
+		}
+		try {
+			if(pattern.length==0){
+				return getFormat("yyyy-MM-dd HH:mm:ss").format(date);
+			}else{
+				return getFormat(pattern[0]).format(date);
+			}
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public static Date parse(String source, String ... pattern) {
+		try {
+			if(pattern.length==0){
+				return getFormat("yyyy-MM-dd HH:mm:ss").parse(source);
+			}else{
+				return getFormat(pattern[0]).parse(source);
+			}
+		} catch (Exception e) {
+			return null;
+		}
+	}
+}

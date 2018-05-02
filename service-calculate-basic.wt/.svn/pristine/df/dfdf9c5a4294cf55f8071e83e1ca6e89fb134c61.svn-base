@@ -1,0 +1,36 @@
+package com.service.webservice.out;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @author lxf
+ * @Date 2017年12月25日
+ */
+@Configuration
+public class WebServiceNoticeMessageConfig {
+	
+	@Value("${message.ip}")
+	private String ip;
+	
+	@Value("${message.port}")
+	private int port;
+	
+	@Bean(name="sendUrl")
+	public URL buildUrl(){
+        URL url = null;
+        try {
+    		String URL = "http://" + ip + ":" + port + "/WebServiceServer_NoticeMessageImpl?wsdl";
+            url = new URL(URL);
+        } catch (MalformedURLException e) {
+            java.util.logging.Logger.getLogger(WebServiceServerNoticeMessageImplService.class.getName())
+                .log(java.util.logging.Level.INFO, 
+                     "Can not initialize the default wsdl from {0}", "http://192.168.10.63:8090/WebServiceServer_NoticeMessageImpl?wsdl");
+        }
+        return url;
+    }
+}

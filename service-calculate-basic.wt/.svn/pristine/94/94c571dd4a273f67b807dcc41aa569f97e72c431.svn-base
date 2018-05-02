@@ -1,0 +1,84 @@
+package com.service.dao;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.stereotype.Component;
+
+import com.service.bean.Const;
+import com.service.bean.GpsSignalChange;
+import com.service.bean.PersonSignal;
+import com.service.bean.VehicleSignal;
+
+/**
+ * @Author Naturn
+ * 
+ * @Date 2017年6月6日 - 下午2:59:17
+ *
+ * @Email juddersky@gmail.com
+ *
+ * @Version 0.0.1
+ */
+
+@Component
+public class MongodbDaoImpl {
+
+	@Autowired
+	MongoTemplate mongoTemplate;
+
+	public void save(PersonSignal signal, String collectionName,String uuid) {
+		signal.setId(uuid);
+		signal.setSignalId(uuid);
+		mongoTemplate.save(signal, collectionName);
+	}
+	
+	public void save(VehicleSignal signal, String collectionName,String uuid) {
+		signal.setId(uuid);
+		mongoTemplate.save(signal, collectionName);
+	}
+	
+	public void save(GpsSignalChange change, String collectionName,String uuid) {
+		change.setId(uuid);
+		mongoTemplate.save(change, collectionName);
+	}
+	public <T> T findById(String uuid, Class<T> clazz,String collection){
+		return mongoTemplate.findById(uuid, clazz, collection);
+	}
+	
+	public PersonSignal findPersonLastSignal(String personId, Date gpstime){
+
+		Sort sort=new Sort(Direction.DESC,"gpsTime");
+		Query query = new Query();
+		query.addCriteria(Criteria.where("personId").is(personId).and("gpsTime").lt(gpstime));
+		query.with(sort);
+		query.limit(1);
+
+		List<PersonSignal> lst= mongoTemplate.find(query, PersonSignal.class, Const.COLLECTION_PERSON_SIGNALS);
+		if(lst.size()>0){
+			return lst.get(0);
+		}
+		return null;
+	}
+	
+	public VehicleSignal findVehicleLastSignal(String vehicleId, Date gpstime){
+
+		Sort sort=new Sort(Direction.DESC,"gpsTime");
+		Query query = new Query();
+		query.addCriteria(Criteria.where("vehicleId").is(vehicleId).and("gpsTime").lt(gpstime));
+		query.with(sort);
+		query.limit(1);
+
+		List<VehicleSignal> lst= mongoTemplate.find(query, VehicleSignal.class, Const.COLLECTION_VEHICLE_SIGNALS);
+		if(lst.size()>0){
+			return lst.get(0);
+		}
+		return null;
+	}
+
+}

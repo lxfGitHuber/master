@@ -1,0 +1,221 @@
+package com.service.calculate;
+
+import java.util.Date;
+
+import com.service.bean.Area;
+import com.service.bean.DutyDetail;
+import com.service.bean.GpsType;
+import com.service.bean.Packet;
+import com.service.bean.Person;
+import com.service.bean.PersonSignal;
+import com.service.bean.Point;
+import com.service.tools.Coordinate;
+import com.service.tools.Tools;
+
+/**
+ * 基础值计算
+ * 
+ * @author lj
+ *
+ */
+public class BasicsCalculate {
+
+	public PersonSignal signal;
+
+	public Person person;
+
+	public Packet packet;
+
+	public BasicsCalculate(PersonSignal signal, Person person, Packet packet) {
+		this.signal = signal;
+		this.person = person;
+		this.packet = packet;
+	}
+
+	public PersonSignal execute(){
+		setDataByPacket();
+		calculateCoordinate();
+		calculateSetAreaIds();
+		calculateIsInWork();
+		calculateIsInArea();
+		return signal;
+	}
+	
+	/**
+	 * 判断人员是否在工作状态</br>
+	 * 0:非工作</br>
+	 * 1:工作</br>
+	 * 浮动时间内都算工作时间
+	 * 
+	 * @return
+	 */
+	public void calculateIsInWork() {
+		if (0 == person.getDetails().size()) {
+			// 该人员当天无排班计划或没有工作区域
+			signal.setIsInWork(0);
+		}
+		if (null != signal.getAreaIds() && 0 != signal.getAreaIds().size()) {
+			// 在工作区域内
+			if (null != isWorkTime()) {
+				// 排班中设置了工作区域，按排班工作区域判断
+				for(DutyDetail detail:person.getDetails()){
+					if (signal.getAreaIds().contains(detail.getAreaId())) {
+						signal.setIsInWork(1);
+					}
+				}
+			} else {
+				// 非工作时间
+				signal.setIsInWork(0);
+			}
+		} else {
+			// 不在工作区域内
+			signal.setIsInWork(0);
+		}
+	}
+	
+	/**
+	 * 判断人员是否在工作状态</br>
+	 * 0:非工作</br>
+	 * 1:工作</br>
+	 * 浮动时间内都算工作时间
+	 * 
+	 * @return
+	 */
+	public void calculateIsInArea() {
+		if (0 == person.getDetails().size()) {
+			// 该人员当天无排班计划或没有工作区域
+			signal.setIsInArea(0);
+		}
+		if (null != signal.getAreaIds() && 0 != signal.getAreaIds().size()) {
+			// 在工作区域内
+			// 排班中设置了工作区域，按排班工作区域判断
+			for(DutyDetail detail:person.getDetails()){
+				if (signal.getAreaIds().contains(detail.getAreaId())) {
+					signal.setIsInArea(1);
+				}
+			}
+		} else {
+			// 不在工作区域内
+			signal.setIsInArea(0);
+		}
+	}
+
+	/**
+	 * 判断当前时间是否是工作时间</br>
+	 * 该方法会判断上下班的浮动时间，不对外</br>
+	 * 例: 工作时间07:00 ~ 08:00 浮动时间5分钟，则在06:55 ~ 08:05这个时间段内都是工作时间
+	 * 
+	 * @return DutyDetail:是工作时间</br>null:不是工作时间
+	 */
+	public DutyDetail isWorkTime() {
+		for(DutyDetail detail:person.getDetails()){
+			if (signal.getGpsTime().after(detail.getWorkStartTime1())
+					&& signal.getGpsTime().before(detail.getWorkEndTime2())) {
+				return detail;
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 根据人员和Gps数据，获取该人员所处的区域Id(有可能在区域交集处，所以返回是一个集合)
+	 * @return
+	 */
+	public void calculateSetAreaIds() {
+		Point p = new Point(signal.getBaiduLat(), signal.getBaiduLng());
+		// 优先判断排班计划中绑定的区域
+		Area area = null;
+		for (DutyDetail detail : person.getDetails()) {
+			area = person.getAreaMap().get(detail.getAreaId());
+			if (null!=area && Tools.isInArea(p, area) & !signal.getAreaIds().contains(detail.getAreaId())) {
+				signal.getAreaIds().add(detail.getAreaId());
+			}
+		}
+	}
+
+	/**
+	 * gps坐标转百度坐标
+	 */
+	public void setDataByPacket() {
+		if(person.getLastGps()!=null){
+			signal.setWatchPower(person.getLastGps().getWatchPower());
+			signal.setCurentModel(person.getLastGps().getCurentModel());
+			signal.setHeartRate(person.getLastGps().getHeartRate());
+			signal.setTransmitFrequency(person.getLastGps().getTransmitFrequency());
+		}
+		signal.setGpsType(packet.getGpsType());
+		signal.setPersonId(person.getPersonId());
+		signal.setDtuNo(person.getDtuNo());
+		signal.setCompanyCode(person.getCompanyCode());
+		signal.setCmdType(packet.getCmdType());
+		signal.setGpsTime(packet.getGpsTime());
+		signal.setGpsAvail(String.valueOf(packet.getIsValid()));
+		signal.setLat(packet.getLat());
+		signal.setLng(packet.getLng());
+		signal.setSpeed(packet.getSpeed());
+		signal.setOrientation(packet.getDirection());
+	}
+
+	/**
+	 * gps坐标转百度坐标
+	 */
+	public void calculateCoordinate() {
+		if(packet.getGpsType().equals(GpsType.TEL)){
+			signal.setBaiduLat(packet.getLat());
+			signal.setBaiduLng(packet.getLng());
+			signal.isPosition = 1;
+		}else{
+			Point p = new Point(signal.getLat(), signal.getLng());
+			p = Coordinate.gpsToWgs84(p);
+			p = Coordinate.wgs84ToBd09(p);
+			signal.setBaiduLat(p.getLat());
+			signal.setBaiduLng(p.getLng());
+			signal.isPosition = 1;
+		}
+		
+	}
+	
+	
+
+	
+	/**
+	 * 是否工作报警时间段内</br>
+	 * 假设当天排班详细为: 08:30~12:00, 13:30~17:00，浮动时间为5分钟</br>
+	 * 则工作报警时间段就为: 08:35~11:55, 13:35~16:55.
+	 * 使用报警功能: 越界报警、超时滞留报警、终端离线报警
+	 * @return true:当前时间处于工作报警时间段内</br>false:当前时间不处于工作报警时间段内
+	 */
+	public boolean isAlarmWorkTime(Date date) {
+		
+		for(DutyDetail detail : person.getDetails()){
+			if (date.after(detail.getWorkStartTime1())
+					&& date.before(detail.getWorkEndTime2())) {
+				return true;
+			}
+		}
+		
+		return false;
+		
+	}
+	
+	/**
+	 * 是否工作报警时间段内</br>
+	 * 假设当天排班详细为: 08:30~12:00, 13:30~17:00，浮动时间为5分钟</br>
+	 * 则工作报警时间段就为: 08:35~11:55, 13:35~16:55.
+	 * 使用报警功能: 越界报警、超时滞留报警、终端离线报警
+	 * @return true:当前时间处于工作报警时间段内</br>false:当前时间不处于工作报警时间段内
+	 */
+	public DutyDetail getDutyDetail(Date date) {
+		
+		for(DutyDetail detail : person.getDetails()){
+			if (date.after(detail.getWorkStartTime1())
+					&& date.before(detail.getWorkEndTime2())) {
+				return detail;
+			}
+		}
+		
+		return null;
+		
+	}
+	
+}

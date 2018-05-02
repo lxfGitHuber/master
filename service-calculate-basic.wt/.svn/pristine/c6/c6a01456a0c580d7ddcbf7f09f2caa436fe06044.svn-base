@@ -1,0 +1,94 @@
+package com.service.kafka;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
+import com.service.bean.BasicInfo;
+import com.service.bean.Const;
+import com.service.bean.GpsSignalChange;
+import com.service.bean.VehiclePacket;
+import com.service.bean.VehicleSignal;
+import com.service.cache.CacheCenter;
+import com.service.calculate.CalculateFactory;
+import com.service.calculate.ChangeCalculate;
+import com.service.calculate.VehicleCalculate;
+import com.service.dao.KafkaDaoImpl;
+import com.service.dao.MongodbDaoImpl;
+import com.service.dao.RedisDaoImpl;
+
+/**
+ * @author lxf
+ * @Date 2017年11月27日
+ */
+@Service
+public class KafkaConsumer_FF {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    MongodbDaoImpl mongodb;
+
+    @Autowired
+    RedisDaoImpl redisdb;
+
+    @Autowired
+    StringRedisTemplate redisTemplate;
+
+    @Autowired
+    KafkaDaoImpl kafkaDao;
+
+
+    @Autowired
+    CacheCenter cacheCenter;
+
+
+    @KafkaListener(topics = Const.TOPIC_NEED_BASICS_CALCULATE_FF)
+    public void getVehiclePacket(ConsumerRecord<?, ?> cr)  {
+
+        try{
+            BasicInfo basicInfo = JSON.parseObject(cr.value().toString(), BasicInfo.class);
+            VehiclePacket p = null;
+            if (null == basicInfo.getSpacket()) {
+                //从mongo中获得packet,然后进行初步计算
+                p = mongodb.findById(basicInfo.getUuid(), VehiclePacket.class, Const.COLLECTION_VEHICLE_PACKETS);
+            } else {
+                p = JSON.parseObject(basicInfo.getSpacket(), VehiclePacket.class);
+            }
+            VehicleSignal signal = new VehicleSignal();
+            VehicleCalculate basicsCalculate = CalculateFactory.getVehicleSignal(signal, p);
+            signal = basicsCalculate.execute(redisdb);
+            logger.debug("这一条数据时间:"+signal.getDtuNo()+signal.hashCode()+" "+signal.getGpsTime());
+            VehicleSignal mongoLastSignal = null;
+            if (null == (mongoLastSignal = redisdb.getLastSignal(signal.getDtuNo()))) {
+                mongoLastSignal = mongodb.findVehicleLastSignal(signal.getVehicleId(), p.getGpsTime());
+            }
+            if (null != signal) {
+                mongodb.save(signal, Const.COLLECTION_VEHICLE_SIGNALS, basicInfo.getUuid());
+                redisTemplate.opsForValue().set("cache.lastGps." + signal.getDtuNo(), JSON.toJSONString(signal));
+                redisdb.update(signal.getDtuNo(), mongoLastSignal, signal);
+                logger.debug("更新后数据时间:"+redisdb.getLastSignal(signal.getDtuNo()).getDtuNo()+redisdb.getLastSignal(signal.getDtuNo()).hashCode()+" "+redisdb.getLastSignal(signal.getDtuNo()).getGpsTime());
+                if (1 == signal.getDataType()) {
+                	logger.debug("上一条数据时间:"+mongoLastSignal.getDtuNo()+mongoLastSignal.hashCode()+" "+mongoLastSignal.getGpsTime());
+                    GpsSignalChange change = ChangeCalculate.calculate(signal.getVehicleId(), signal.getDtuNo(), signal, mongoLastSignal, redisdb);
+                    if (null != change) {
+                        mongodb.save(change, Const.COLLECTION_VEHICLE_CHANGESIGNALS, basicInfo.getUuid());
+                    }
+                    kafkaDao.send(signal, Const.TOPIC_VEHICLE_NEED_ALARM_CALCULATE, basicInfo.getUuid());
+                }else{
+                	kafkaDao.send(signal, Const.TOPIC_VEHICLE_GIS_CALCULATE, basicInfo.getUuid());
+                }
+                cacheCenter.vehicleCount.incrementAndGet();
+            }
+        }catch (Exception e){
+        	logger.error("",e);
+        }
+        
+    }
+
+}
+

@@ -1,0 +1,81 @@
+package com.service.cache;
+
+import java.util.Date;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.service.bean.Person;
+import com.service.bean.PersonSignal;
+import com.service.tools.RedisUtil;
+
+@Repository
+public class DbSignal {
+	private final Logger logger = Logger.getLogger(getClass());
+    
+    @Autowired
+	private RedisUtil redisUtil;
+	
+	@Autowired
+    CacheCenter cacheCenter;
+	
+	/**
+	 * 根据simno获取最新一条模式
+	 */
+	public String getModel(String gpsNo){
+		if(null!=cacheCenter.lastModelCache.get(gpsNo)){
+			return cacheCenter.lastModelCache.get(gpsNo);
+		}
+		return null;
+	}
+    
+	public void updatePersonLastTime(String dtuNo) {
+		try {
+			Person person = initPerson(dtuNo);
+			person.setLastGpsTime(new Date());
+			redisUtil.set("cache.person."+dtuNo,JSON.toJSONString(person));
+		} catch (Exception e) {
+			logger.error(e);
+		}
+	}
+	
+	public Person initPerson(String dtuNo) {
+		Person person = getPerson(dtuNo);
+		return person;
+	}
+	
+	/**
+	 * 根据dtuNo查找人员
+	 * @param personNo
+	 * @return
+	 */
+	public Person getPerson(String dtuNo) {
+		Person person = null;
+		String json = null;
+		try {
+			json = redisUtil.get("cache.person." + dtuNo);
+			if (json != null) {
+				person = JSON.parseObject(json, new TypeReference<Person>(){});
+			}
+		} catch (Exception e) {
+			logger.error(e);
+		}
+		return person;
+	}
+	/**
+	 * 补点数据保存队列
+	 * @param dtuNo
+	 * @return
+	 */
+	public ConcurrentLinkedQueue<PersonSignal> getAddPointQueue(String dtuNo) {
+		synchronized (cacheCenter.addPointQueue) {
+			if (!cacheCenter.addPointQueue.containsKey(dtuNo))
+				cacheCenter.addPointQueue.put(dtuNo, new ConcurrentLinkedQueue<PersonSignal>());
+		}
+		return cacheCenter.addPointQueue.get(dtuNo);
+	}
+}

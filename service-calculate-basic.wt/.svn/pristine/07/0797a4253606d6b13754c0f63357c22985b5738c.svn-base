@@ -1,0 +1,69 @@
+package com.service.bean;
+
+/**
+ * 路段检测点
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class RoadCheckPoint {
+	/**
+	 * 路段检测点Id
+	 */
+	private String checkPointId;
+	/**
+	 * 路段Id
+	 */
+	private String roadId;
+	/**
+	 * 百度经度
+	 */
+	private double baiduLng;
+	/**
+	 * 百度纬度
+	 */
+	private double baiduLat;
+	/**
+	 * 清扫次数
+	 */
+	private int clearTimes;
+	/**
+	 * 清扫回数
+	 */
+	private int clearWays;
+	public String getCheckPointId() {
+		return checkPointId;
+	}
+	public void setCheckPointId(String checkPointId) {
+		this.checkPointId = checkPointId;
+	}
+	public String getRoadId() {
+		return roadId;
+	}
+	public void setRoadId(String roadId) {
+		this.roadId = roadId;
+	}
+	public double getBaiduLng() {
+		return baiduLng;
+	}
+	public void setBaiduLng(double baiduLng) {
+		this.baiduLng = baiduLng;
+	}
+	public double getBaiduLat() {
+		return baiduLat;
+	}
+	public void setBaiduLat(double baiduLat) {
+		this.baiduLat = baiduLat;
+	}
+	public int getClearTimes() {
+		return clearTimes;
+	}
+	public void setClearTimes(int clearTimes) {
+		this.clearTimes = clearTimes;
+	}
+	public int getClearWays() {
+		return clearWays;
+	}
+	public void setClearWays(int clearWays) {
+		this.clearWays = clearWays;
+	}
+}

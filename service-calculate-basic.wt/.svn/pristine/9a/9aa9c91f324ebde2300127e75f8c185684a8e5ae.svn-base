@@ -1,0 +1,169 @@
+package com.service.dao;
+
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import com.service.bean.CmdType;
+import com.service.bean.GpsType;
+import com.service.bean.OrderMessage;
+import com.service.bean.Packet;
+import com.service.bean.Person;
+import com.service.bean.PersonOnOffTime;
+import com.service.tools.RedisUtil;
+
+@Repository
+public class DbOther {
+	
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired
+	private RedisUtil redisUtil;
+
+	/**
+	 * ,要修改成redis，暂时不改，等以后一并改掉
+	 * 查询所有要发送的指令
+	 */
+	
+	public Map<String,OrderMessage> getOrderMessages(String sign){
+		Map<String, OrderMessage> map = new HashMap<String, OrderMessage>();
+		String json = null;
+		try {
+			json = redisUtil.get("front.send.message");
+			if(json != null){
+				map = JSON.parseObject(json, new TypeReference<Map<String, OrderMessage>>(){});
+			}
+		} catch (Exception e) {
+			logger.error("",e);
+		}
+		return map;
+		
+		
+		
+	}
+	
+	/**
+	 * ,要修改成redis，暂时不改，等以后一并改掉....
+	 * 改变发送成功数据的状态,一改变里面数据
+	 */
+	public void changeHandle(List<OrderMessage> orderMessages){
+		//RedisUtil.instance().delete("front.send.message");这个应该是有用的，因为到时要从redis取数据且删除。
+		ConcurrentLinkedQueue<OrderMessage> OrderMessagequeue = new ConcurrentLinkedQueue<OrderMessage>();
+			if (orderMessages.size()==0) {
+				return;
+			}
+			try {
+				for(int i=0;i<orderMessages.size();i++){
+					OrderMessage om= orderMessages.get(i);
+					OrderMessagequeue.offer(om);
+				}
+				
+				redisUtil.executeOne("changehandle",OrderMessagequeue);
+			} catch (Exception e) {
+				logger.error("",e);
+			}
+		
+	}
+	
+	/**
+	 * ,要修改成redis，暂时不改，等以后一并改掉,暂时不动
+	 * 根据人员gpsno获取人员所属projectId
+	 */
+	public String getProjectId(String gpsNo,String companyCode){
+		Map<String, Object> map = new HashMap<>();
+		String json = null;
+		String projectId = "";
+		try {
+			json = redisUtil.get("cache.person.projectid."+gpsNo);
+			if(json != null){
+				map = JSON.parseObject(json, new TypeReference<Map<String, Object>>(){});
+			    projectId = map.get(gpsNo).toString();
+			}
+		} catch (Exception e) {
+			logger.error("",e);
+		}
+		
+		return projectId;
+	}
+	
+	
+	
+	/**
+	 * ,要修改成redis，暂时不改，等以后一并改掉
+	 * 保存开关机上下班时指令,是按照一条一条来保存的
+	 */
+	public void savePersonOnOffTime(Packet packet,Person person){
+		//Date onofftime;
+		//Date addtime;
+		String dtuNo = packet.getDtuNo();
+		int type =1;
+		if (person ==null) {
+			System.out.println("人员person(cache.person.lastGps.)是空");
+			return;
+		}
+		String addby = person.getPersonName();
+		String companycode = person.getCompanyCode();
+		  
+		Date date = new Date();
+		Timestamp onofftime = new Timestamp(date.getTime());
+		Timestamp addtime = new Timestamp(date.getTime());
+		if(GpsType.CHUN_HUI.equals(packet.getGpsType()) && packet.getCmdType().equals(CmdType.CH_T84)){
+			type = 1;
+		} else if(packet.getGpsType().equals(GpsType.CHUN_HUI) && packet.getCmdType().equals(CmdType.CH_T1)){
+			type = 0;
+		} else if(packet.getGpsType().equals(GpsType.CHUN_HUI) && packet.getCmdType().equals(CmdType.CH_T81)){
+			type = 2;
+		} else {
+			return;
+		}   
+		 PersonOnOffTime poot = new PersonOnOffTime();
+		poot.setDtuNo(dtuNo);
+		poot.setType(type);
+		poot.setOnofftime(onofftime);
+		poot.setCompanycode(companycode);
+	
+		String key = "PersonOnoffTime";
+		
+		ConcurrentLinkedQueue<PersonOnOffTime> personOnOffTimequeue = new ConcurrentLinkedQueue<PersonOnOffTime>();
+		personOnOffTimequeue.offer(poot);
+		if(personOnOffTimequeue.size()>0){
+			redisUtil.executeOne(key,personOnOffTimequeue);
+		}
+		
+		
+	  //  PooledConnection con = null;
+	  //  PreparedStatement pstmt = null;
+	   // String sql = "insert into crc_PersonOnOffTime (GpsNo,OnOffTime,Type,CompanyCode,AddBy,AddTime) values "
+		//	   +" ('"+dtuNo+"','"+onofftime+"','"+type+"','"+companycode+"','"+addby+"','"+addtime+"')";
+	   // try {
+		//	con = DbConnectionManager.getConnection(company);
+		//	pstmt = con.prepareStatement(sql);
+		//	System.out.println("保存开关机上下班指令sql:"+sql);
+		//	pstmt.execute();
+	 	//} finally {
+			
+		//}
+		   
+	}
+	/**
+	 * 根据人员gpsno获取人员模式频率(无用)
+	 */
+	public String findworkfrequency(String gpsNo,String companyCode){
+		
+		String workfrequency;
+		workfrequency = redisUtil.get("cache.frequency."+gpsNo);
+		return workfrequency;
+	}
+	
+	
+}

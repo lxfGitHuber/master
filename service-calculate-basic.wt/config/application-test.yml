@@ -1,0 +1,56 @@
+server:
+  port: 10331
+
+spring:
+  application:
+    name: service-person-basics-calculate
+  cloud:
+    config:
+      discovery:
+        enabled: true
+        serviceId: service-config-eureka
+      profile: dev
+      failFast: true
+      name: service-person
+  kafka:
+    producer:
+      retries: 0
+      batch-size: 16384
+      buffer-memory: 33554432
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      bootstrap-servers: 192.168.10.83:9092,192.168.10.84:9092,192.168.10.85:9092
+    consumer:
+      bootstrap-servers: 192.168.10.83:9092,192.168.10.84:9092,192.168.10.85:9092
+      group-id: foo6
+      auto-offset-reset: earliest
+      enable-auto-commit: true
+      auto-commit-interval: 100
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      concurrency: 4
+      max_records: 1000
+      fixedThreadPoolSize: 4
+      session_timeout: 60
+  data:
+    mongodb:
+      uri: mongodb://192.168.10.83:30000,192.168.10.84:30000,192.168.10.85:30000/lyzh-cloud
+  redis:
+    host: 192.168.10.84
+    port: 6379
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.10.83:8671/eureka/
+
+message:
+  ip: 192.168.10.63
+  port: 8090
+  smsTopic: cache.person.refresh
+
+kafka:
+  virtualLength: 100
+
+debug: false
+
+logging.config: file:./config/log4j2.xml

@@ -1,0 +1,110 @@
+package com.service.kafka;
+
+import java.text.SimpleDateFormat;
+
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
+import com.service.bean.BasicInfo;
+import com.service.bean.Const;
+import com.service.bean.Packet;
+import com.service.bean.Person;
+import com.service.bean.PersonSignal;
+import com.service.cache.CacheCenter;
+import com.service.calculate.BasicsCalculate;
+import com.service.calculate.CalculateFactory;
+import com.service.calculate.UplowCalculate;
+import com.service.dao.KafkaDaoImpl;
+import com.service.dao.MongodbDaoImpl;
+import com.service.dao.RedisDaoImpl;
+import com.service.tools.Tools;
+
+/**
+ * @author lxf
+ * @Date 2017年11月27日
+ */
+@Service
+public class KafkaConsumer {
+    private final Logger logger = Logger.getLogger(getClass());
+
+    @Autowired
+    MongodbDaoImpl mongodb;
+
+    @Autowired
+    RedisDaoImpl redisdb;
+    
+    @Autowired
+    StringRedisTemplate redisTemplate; 
+    
+    @Autowired
+    CacheCenter cacheCenter;
+    
+    @Autowired
+    KafkaDaoImpl kafkaDao;
+
+    
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+    @KafkaListener(topics = Const.TOPIC_NEED_BASICS_CALCULATE)
+    public void getPersonPacket(ConsumerRecord<?, ?> cr) {
+    	try {
+    		logger.debug("getPacket" + cr.value().toString());
+
+            BasicInfo basicInfo = JSON.parseObject(cr.value().toString(), BasicInfo.class);
+            Packet p = null;
+            if(null==basicInfo.getSpacket()){
+            	//从mongo中获得packet,然后进行初步计算
+                p = mongodb.findById(basicInfo.getUuid(),Packet.class,Const.COLLECTION_PERSON_PACKETS);
+            }else{
+            	p = JSON.parseObject(basicInfo.getSpacket(),Packet.class);
+            }
+            if(null!=p){
+            	 //从redis中获得基本信息
+            	Person person = redisdb.getPerson(p.getDtuNo(),sdf.format(p.getGpsTime()));
+            	if(person == null){
+//                    logger.error("person is null getDtuNo:" + p.getDtuNo());
+                    return;
+                } 
+                //通用基础计算
+            	//从mongo中获得上一条signal
+                PersonSignal mongoLastSignal = mongodb.findPersonLastSignal(person.getPersonId(),p.getGpsTime());
+                person.setLastGps(mongoLastSignal);
+                PersonSignal signal = new PersonSignal();
+                if (1 == p.getIsValid()) {
+    	            BasicsCalculate basicsCalculate = CalculateFactory.getPersonSignal(signal, person,p);
+    	            signal = basicsCalculate.execute();
+    	            //计算人员当日里程和总里程
+    	            UplowCalculate.calMile(signal,mongoLastSignal,p);
+    	            //在线当日作业停留时间
+    	            UplowCalculate.calStopTime(signal,mongoLastSignal);
+    	            if(person.getLastGps() != null && !Tools.isSameDay(signal.getGpsTime(), person.getLastGps().getGpsTime())){
+    					signal.setStopTime(0);
+    				}
+                }else{
+                	return;
+                }
+                if(null !=signal.getDtuNo()){
+                	mongodb.save(signal, Const.COLLECTION_PERSON_SIGNALS,basicInfo.getUuid());
+                    //最新数据更新到redis
+                	redisdb.geoADD("PersonSignalGEO", String.valueOf(signal.getBaiduLng()), String.valueOf(signal.getBaiduLat()), signal.getDtuNo());
+                	redisTemplate.opsForValue().set("cache.person.lastGps." + signal.getDtuNo(),JSON.toJSONString(signal));
+                    kafkaDao.send(signal, Const.TOPIC_NEED_ALARM_CALCULATE,basicInfo.getUuid());
+                    kafkaDao.send(signal, Const.TOPIC_PERSON_CALCULATE_GIS,basicInfo.getUuid());
+                    cacheCenter.personCount.incrementAndGet();
+                }else{
+                	//logger.error("signal is  null!");
+                }
+            }else{
+            	//logger.error("package is null");
+            }
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+        
+    }
+}
+	

@@ -1,0 +1,43 @@
+package com.service.cache;
+
+import java.util.concurrent.ConcurrentLinkedQueue;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+import com.service.bean.PersonSignal;
+
+@Repository
+public class DbSignal {
+	private final Logger logger = LoggerFactory.getLogger(getClass());
+
+	
+	@Autowired
+    CacheCenter cacheCenter;
+	
+	/**
+	 * 根据simno获取最新一条模式
+	 */
+	public String getModel(String gpsNo){
+		if(null!=cacheCenter.lastModelCache.get(gpsNo)){
+			return cacheCenter.lastModelCache.get(gpsNo);
+		}
+		return null;
+	}
+    
+
+	/**
+	 * 补点数据保存队列
+	 * @param dtuNo
+	 * @return
+	 */
+	public ConcurrentLinkedQueue<PersonSignal> getAddPointQueue(String dtuNo) {
+		synchronized (cacheCenter.addPointQueue) {
+			if (!cacheCenter.addPointQueue.containsKey(dtuNo))
+				cacheCenter.addPointQueue.put(dtuNo, new ConcurrentLinkedQueue<PersonSignal>());
+		}
+		return cacheCenter.addPointQueue.get(dtuNo);
+	}
+}

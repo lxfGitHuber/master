@@ -1,0 +1,77 @@
+package com.service.calculate;
+
+import java.text.DecimalFormat;
+
+import com.service.bean.GpsType;
+import com.service.bean.Packet;
+import com.service.bean.PersonSignal;
+import com.service.tools.CalculateTools;
+
+/**
+ * Created by TaoMac on 2017/9/5.
+ */
+public class UplowCalculate {
+	private static DecimalFormat df = new DecimalFormat("#.00");
+    /**
+     * 计算人员当日里程和总里程
+     */
+    public static void calMile(PersonSignal signal, PersonSignal lastSignal,Packet packet) {
+        if (null == lastSignal) {
+           signal.setTodayMile(Double.parseDouble(df.format(0.0)));
+           signal.setCurMile( Double.parseDouble(df.format(0.0)));
+        } else {
+            // 当前Gps时间与上一条Gps时间是同一天
+            if (CalculateTools.isSameDay(signal.getGpsTime(), lastSignal.getGpsTime())) {
+                double distance = 0.0;
+                distance = CalculateTools.getTwoPointDistance(lastSignal.getBaiduLng(), lastSignal.getBaiduLat(),
+                        signal.getBaiduLng(), signal.getBaiduLat());
+                long time = 0;
+                if ((GpsType.CHUN_HUI).equals(packet.getGpsType())||(GpsType.TEL).equals(packet.getGpsType())) {
+                    time = (signal.getGpsTime().getTime() - lastSignal.getGpsTime().getTime()) / 1000;
+                    if (time > 0) {
+                        signal.setSpeed(Double.parseDouble(df.format(distance / time)));
+                    }
+                }
+                //如果速度大于2米/秒，取上一条定位数据
+//                if(signal.speed > 2 && lastSignal.durationtime < 10 * 60){
+//                    distance = 0;
+//                    signal.speed = lastSignal.speed;
+//                    signal.lat = lastSignal.lat;
+//                    signal.lng = lastSignal.lng;
+//                    signal.baiduLat = lastSignal.baiduLat;
+//                    signal.baiduLng = lastSignal.baiduLng;
+//                    signal.baiduLocation = lastSignal.baiduLocation;
+//                    signal.durationtime = lastSignal.durationtime + time;
+//                } else {
+//                    signal.durationtime = 0;
+//                }
+                signal.setTodayMile(Double.parseDouble(df.format(lastSignal.getTodayMile() + distance)));
+                signal.setCurMile(Double.parseDouble(df.format(lastSignal.getCurMile() + distance)));
+            } else {
+                signal.setTodayMile(Double.parseDouble(df.format(0.0)));
+                signal.setCurMile(Double.parseDouble(df.format(lastSignal.getCurMile())));
+            }
+        }
+    }
+
+    /**
+     * 在线当日作业停留时间
+     */
+    public static void calStopTime(PersonSignal signal, PersonSignal lastSignal) {
+        if (lastSignal != null) {
+            long difftime = (signal.getGpsTime().getTime() - lastSignal.getGpsTime().getTime()) / 1000;
+            if (CalculateTools.isSameDay(signal.getGpsTime(), lastSignal.getGpsTime()) && signal.getIsInWork() == 1
+                    && lastSignal.getIsInWork() == 1 && signal.getSpeed() == 0 && lastSignal.getSpeed() == 0
+                    && difftime < 5 * 60) {
+                signal.setStopTime(lastSignal.getStopTime() + Math.abs(difftime));
+            } else {
+                signal.setStopTime(lastSignal.getStopTime());
+            }
+
+            if(!CalculateTools.isSameDay(signal.getGpsTime(), lastSignal.getGpsTime())){
+                signal.setStopTime(0);
+            }
+        }
+    }
+
+}

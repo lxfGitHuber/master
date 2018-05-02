@@ -1,0 +1,176 @@
+package com.service.bean;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * 报警
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class PersonAlarm implements Serializable {
+	/**
+	 * 人员Id
+	 */
+	private String personId;
+	/**
+	 * 人员姓名
+	 */
+	private String personName;
+	/**
+	 * 人员姓名
+	 */
+	private String dtuNo;
+	
+	
+	/**
+	 * 公司代码
+	 */
+	private String projectNo;
+	
+	/**
+	 * 公司代码
+	 */
+	private String projectName;
+	
+	/**
+	 * 报警起始时间
+	 */
+	private Date alarmBegin;
+	/**
+	 * 报警终止时间
+	 */
+	private Date alarmEnd;
+	
+	/**
+	 * 违规时长(单位:秒)
+	 */
+	private long alarmDuration;
+	
+	
+	
+	/**
+	 * 报警类别
+	 */
+	private String alarmName;
+	
+	/**
+	 * 报警类别
+	 */
+	private String alarmInfo;
+	
+	
+	/**
+	 * 报警类别
+	 */
+	private String alarmType;
+
+	/**
+	 * 报警级别
+	 */
+	private String alarmLevel;
+
+	
+	/**
+	 * 公司代码
+	 */
+	private String companyCode;
+
+
+	private List<Point>	alarmPath;
+	
+	public PersonAlarm(){
+		this.alarmPath = new ArrayList<Point>();
+	}
+	public void setAlarmPath(double lat,double lng){
+		Point p = new Point(lat,lng);
+		alarmPath.add(p);
+	}
+	public String getPersonId() {
+		return personId;
+	}
+	public void setPersonId(String personId) {
+		this.personId = personId;
+	}
+	public String getPersonName() {
+		return personName;
+	}
+	public void setPersonName(String personName) {
+		this.personName = personName;
+	}
+	public String getDtuNo() {
+		return dtuNo;
+	}
+	public void setDtuNo(String dtuNo) {
+		this.dtuNo = dtuNo;
+	}
+	public String getProjectNo() {
+		return projectNo;
+	}
+	public void setProjectNo(String projectNo) {
+		this.projectNo = projectNo;
+	}
+	public String getProjectName() {
+		return projectName;
+	}
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+	public Date getAlarmBegin() {
+		return alarmBegin;
+	}
+	public void setAlarmBegin(Date alarmBegin) {
+		this.alarmBegin = alarmBegin;
+	}
+	public Date getAlarmEnd() {
+		return alarmEnd;
+	}
+	public void setAlarmEnd(Date alarmEnd) {
+		this.alarmEnd = alarmEnd;
+	}
+	public long getAlarmDuration() {
+		return alarmDuration;
+	}
+	public void setAlarmDuration(long alarmDuration) {
+		this.alarmDuration = alarmDuration;
+	}
+	public String getAlarmName() {
+		return alarmName;
+	}
+	public void setAlarmName(String alarmName) {
+		this.alarmName = alarmName;
+	}
+	public String getAlarmInfo() {
+		return alarmInfo;
+	}
+	public void setAlarmInfo(String alarmInfo) {
+		this.alarmInfo = alarmInfo;
+	}
+	public String getAlarmType() {
+		return alarmType;
+	}
+	public void setAlarmType(String alarmType) {
+		this.alarmType = alarmType;
+	}
+	public String getAlarmLevel() {
+		return alarmLevel;
+	}
+	public void setAlarmLevel(String alarmLevel) {
+		this.alarmLevel = alarmLevel;
+	}
+	public String getCompanyCode() {
+		return companyCode;
+	}
+	public void setCompanyCode(String companyCode) {
+		this.companyCode = companyCode;
+	}
+	public List<Point> getAlarmPath() {
+		return alarmPath;
+	}
+	public void setAlarmPath(List<Point> alarmPath) {
+		this.alarmPath = alarmPath;
+	}
+
+}

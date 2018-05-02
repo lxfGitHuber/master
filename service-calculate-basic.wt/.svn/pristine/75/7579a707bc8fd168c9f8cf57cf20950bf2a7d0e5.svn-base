@@ -1,0 +1,38 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.service.scheduler;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import com.service.cache.CacheCenter;
+
+/**
+ *
+ * @author breeze
+ */
+@Component
+public class PersonDataScheduler {
+
+    private static final Logger logger = LoggerFactory.getLogger(PersonDataScheduler.class);
+
+    @Autowired
+    CacheCenter cacheCenter;
+
+    @Scheduled(fixedDelay = 10000)
+    public void personBatchcount() {
+        logger.info(String.format("--------------------------------queue.person.size: %s", cacheCenter.personCount.get()));
+
+    }
+    @Scheduled(fixedDelay = 10000)
+    public void vehicleBatchcount() {
+        logger.info(String.format("--------------------------------queue.vehicle.size: %s", cacheCenter.vehicleCount.get()));
+
+    }
+}

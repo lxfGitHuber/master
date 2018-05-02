@@ -1,0 +1,230 @@
+package com.service.bean;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import org.springframework.data.annotation.Id;
+
+import com.alibaba.fastjson.annotation.JSONField;
+
+/**
+ * @author lxf
+ * @Date 2017年12月5日
+ */
+public class Packet implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
+	@Id
+	private String id;
+	/**
+	 * 终端编号
+	 */
+	private String dtuNo;
+	/**
+	 * Gps类型
+	 */
+	private String gpsType;
+	/**
+	 * 命令类别
+	 */
+	private String cmdType;
+	/**
+	 * Gps时间
+	 */
+	private Date gpsTime;
+	/**
+	 * 当前速度
+	 */
+	private double speed;
+	/**
+	 * 经度
+	 */
+	private double lng;
+	/**
+	 * 纬度
+	 */
+	private double lat;
+	/**
+	 * 航向
+	 */
+	private double direction;
+	/**
+	 * 是否有效数据</br>
+	 * 0: 无效</br>
+	 * 1:有效
+	 */
+	private int isValid;
+	/**
+	 * 预留
+	 */
+	private String other;
+	/**
+	 * 预留(有些协议可能没有数据区)
+	 */
+	private String dataArea;
+	/**
+	 * 原始数据
+	 */
+	@JSONField(serialize=false)
+	private String rawData;
+	/**
+	 * 电池
+	 */
+	private String battery;
+	/**
+	 * 待回复的消息
+	 */
+	private String replyMessage;
+
+	/**
+	 * 模式
+	 */
+	private String curentModel;
+	
+	/**
+	 * 频率
+	 */
+	private String transmitFrequency;
+
+	public String getDtuNo() {
+		return dtuNo;
+	}
+
+	public void setDtuNo(String dtuNo) {
+		this.dtuNo = dtuNo;
+	}
+
+	public String getGpsType() {
+		return gpsType;
+	}
+
+	public void setGpsType(String gpsType) {
+		this.gpsType = gpsType;
+	}
+
+	public String getCmdType() {
+		return cmdType;
+	}
+
+	public void setCmdType(String cmdType) {
+		this.cmdType = cmdType;
+	}
+
+	public void privatedType(String cmdType) {
+		this.cmdType = cmdType;
+	}
+
+	public Date getGpsTime() {
+		return gpsTime;
+	}
+
+	public void setGpsTime(Date gpsTime) {
+		this.gpsTime = gpsTime;
+	}
+
+	public double getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(double speed) {
+		this.speed = speed;
+	}
+
+	public double getLng() {
+		return lng;
+	}
+
+	public void setLng(double lng) {
+		this.lng = lng;
+	}
+
+	public double getLat() {
+		return lat;
+	}
+
+	public void setLat(double lat) {
+		this.lat = lat;
+	}
+
+	public double getDirection() {
+		return direction;
+	}
+
+	public void setDirection(double direction) {
+		this.direction = direction;
+	}
+
+	public int getIsValid() {
+		return isValid;
+	}
+
+	public void setIsValid(int isValid) {
+		this.isValid = isValid;
+	}
+
+	public String getOther() {
+		return other;
+	}
+
+	public void setOther(String other) {
+		this.other = other;
+	}
+
+	public String getDataArea() {
+		return dataArea;
+	}
+
+	public void setDataArea(String dataArea) {
+		this.dataArea = dataArea;
+	}
+
+	public String getRawData() {
+		return rawData;
+	}
+
+	public void setRawData(String rawData) {
+		this.rawData = rawData;
+	}
+
+	public String getBattery() {
+		return battery;
+	}
+
+	public void setBattery(String battery) {
+		this.battery = battery;
+	}
+
+	public String getReplyMessage() {
+		return replyMessage;
+	}
+
+	public void setReplyMessage(String replyMessage) {
+		this.replyMessage = replyMessage;
+	}
+
+	public String getCurentModel() {
+		return curentModel;
+	}
+
+	public void setCurentModel(String curentModel) {
+		this.curentModel = curentModel;
+	}
+
+	public String getTransmitFrequency() {
+		return transmitFrequency;
+	}
+
+	public void setTransmitFrequency(String transmitFrequency) {
+		this.transmitFrequency = transmitFrequency;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+}

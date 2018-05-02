@@ -1,0 +1,130 @@
+package com.service.bean;
+
+import java.util.Date;
+
+import com.alibaba.fastjson.annotation.JSONField;
+
+/**
+ * @author lxf
+ * @Date 2018年1月8日
+ */
+public class GpsSignalChange {
+	
+	@JSONField(serialize = false)
+	private String id;
+	
+	private String vehicleId;
+	
+	private String dtuNo;
+	
+	private Date gpsTime;
+	
+	private int workStatus;
+	
+	private int stopStatus;
+	
+	private int timeSpan;
+	
+	private double fuelCostly;
+	
+	private double mileChange;
+	
+	private double fuelAdd;
+	
+	private int accStatus;
+	
+	public GpsSignalChange(String vehicleId,String dtuNo){
+		this.vehicleId = vehicleId;
+		this.dtuNo = dtuNo;
+	}
+
+	public String getVehicleId() {
+		return vehicleId;
+	}
+
+	public void setVehicleId(String vehicleId) {
+		this.vehicleId = vehicleId;
+	}
+
+	public String getDtuNo() {
+		return dtuNo;
+	}
+
+	public void setDtuNo(String dtuNo) {
+		this.dtuNo = dtuNo;
+	}
+
+	public Date getGpsTime() {
+		return gpsTime;
+	}
+
+	public void setGpsTime(Date gpsTime) {
+		this.gpsTime = gpsTime;
+	}
+
+	public int getWorkStatus() {
+		return workStatus;
+	}
+
+	public void setWorkStatus(int workStatus) {
+		this.workStatus = workStatus;
+	}
+
+	public int getStopStatus() {
+		return stopStatus;
+	}
+
+	public void setStopStatus(int stopStatus) {
+		this.stopStatus = stopStatus;
+	}
+
+	public int getTimeSpan() {
+		return timeSpan;
+	}
+
+	public void setTimeSpan(int timeSpan) {
+		this.timeSpan = timeSpan;
+	}
+
+	public double getFuelCostly() {
+		return fuelCostly;
+	}
+
+	public void setFuelCostly(double fuelCostly) {
+		this.fuelCostly = fuelCostly;
+	}
+
+	public double getMileChange() {
+		return mileChange;
+	}
+
+	public void setMileChange(double mileChange) {
+		this.mileChange = mileChange;
+	}
+
+	public double getFuelAdd() {
+		return fuelAdd;
+	}
+
+	public void setFuelAdd(double fuelAdd) {
+		this.fuelAdd = fuelAdd;
+	}
+
+	public int getAccStatus() {
+		return accStatus;
+	}
+
+	public void setAccStatus(int accStatus) {
+		this.accStatus = accStatus;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	
+}

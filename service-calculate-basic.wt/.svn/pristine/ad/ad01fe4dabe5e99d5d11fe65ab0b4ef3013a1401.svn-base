@@ -1,0 +1,23 @@
+package com.service.calculate;
+
+import com.service.bean.VehiclePacket;
+import com.service.bean.VehicleSignal;
+import com.service.dao.RedisDaoImpl;
+
+/**
+ * @author lxf
+ * @Date 2018年1月8日
+ */
+public class FFCalculate extends VehicleCalculate{
+	
+	public FFCalculate(VehicleSignal signal, VehiclePacket packet) {
+		super(signal, packet);
+	}
+	
+	@Override
+    public VehicleSignal execute(RedisDaoImpl redisDaoImpl) {
+        super.execute(redisDaoImpl);
+        return signal;
+    }
+
+}

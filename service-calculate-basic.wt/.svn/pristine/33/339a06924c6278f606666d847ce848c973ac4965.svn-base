@@ -1,0 +1,18 @@
+package com.service.tools;
+
+import java.util.Date;
+
+public class IDCreator {
+
+	private static final int Incremental = 1;
+
+	private static String currentIdx;
+
+	public static synchronized String getSignalId() {
+		if (currentIdx == null) {
+			currentIdx = String.valueOf(new Date().getTime()) + "0001";
+		}
+		currentIdx = String.valueOf(Long.parseLong(currentIdx) + Incremental);
+		return currentIdx;
+	}
+}
